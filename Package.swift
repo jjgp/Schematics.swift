@@ -4,21 +4,20 @@ import PackageDescription
 
 let package = Package(
     name: "Schematics.swift",
+    platforms: [
+        .iOS(.v15),
+        .macOS(.v12)
+    ],
     products: [
-        .library(
-            name: "StoreSchema",
-            targets: ["StoreSchema"]
-        ),
+        .library(name: "CoreSchema", targets: ["CoreSchema"]),
+        .library(name: "ReactiveSchema", targets: ["ReactiveSchema"]),
+        .library(name: "UnidirectionalSchema", targets: ["UnidirectionalSchema"])
     ],
     dependencies: [],
     targets: [
-        .target(
-            name: "StoreSchema",
-            dependencies: []
-        ),
-        .testTarget(
-            name: "StoreSchemaTests",
-            dependencies: ["StoreSchema"]
-        ),
+        .target(name: "CoreSchema", dependencies: []),
+        .target(name: "ReactiveSchema", dependencies: ["CoreSchema"]),
+        .target(name: "UnidirectionalSchema", dependencies: ["ReactiveSchema"]),
+        .testTarget(name: "UnidirectionalSchemaTests", dependencies: ["UnidirectionalSchema"])
     ]
 )
