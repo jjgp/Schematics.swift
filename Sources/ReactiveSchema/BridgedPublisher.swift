@@ -66,6 +66,10 @@ private extension BridgedPublisher {
         }
 
         func request(_ demand: Subscribers.Demand) {
+            guard demand > 0 else {
+                fatalError("Demand must be greater than none")
+            }
+
             lock {
                 guard subscriber != nil else {
                     return
@@ -73,7 +77,7 @@ private extension BridgedPublisher {
 
                 self.demand += demand
 
-                if demand > 0, subscription == nil {
+                if subscription == nil {
                     subscription = subscribeReceiveValue { [weak self] value in
                         self?.receive(value)
                     }

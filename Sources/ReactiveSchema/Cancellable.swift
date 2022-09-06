@@ -23,7 +23,7 @@ public extension Cancellable {
 
 public extension Cancellable {
     static func == (lhs: Cancellable, rhs: Cancellable) -> Bool {
-        ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+        lhs === rhs
     }
 
     func hash(into hasher: inout Hasher) {

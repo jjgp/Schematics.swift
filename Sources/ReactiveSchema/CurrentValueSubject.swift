@@ -30,9 +30,9 @@ public extension CurrentValueSubject {
     }
 
     func send(mutateValue: (inout Value) -> Void) {
-        let subscriptions = lock {
+        let (value, subscriptions) = lock {
             mutateValue(&currentValue)
-            return self.subscriptions
+            return (currentValue, self.subscriptions)
         }
 
         subscriptions.forEach { subscription in
@@ -67,7 +67,7 @@ private extension CurrentValueSubject {
         }
 
         static func == (lhs: Subscription<Value>, rhs: Subscription<Value>) -> Bool {
-            ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+            lhs === rhs
         }
 
         func hash(into hasher: inout Hasher) {
