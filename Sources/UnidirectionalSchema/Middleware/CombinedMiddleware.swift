@@ -1,18 +1,15 @@
-public final class CombinedMiddleware<State>: Middleware<State> {
-    private let middlewares: [Middleware<State>]
-    override public var store: AnyStateContainer<State>! {
-        didSet {
-            middlewares.forEach { middleware in
-                middleware.store = store
-            }
-        }
-    }
+public struct CombinedMiddleware: Middleware {
+    private let middlewares: [Middleware]
 
-    public init(_ middlewares: [Middleware<State>]) {
+    public init(_ middlewares: [Middleware]) {
         self.middlewares = middlewares
     }
 
-    override public func respond(to action: Action, forwardingTo next: Dispatch) {
+    public init(_ middlewares: Middleware...) {
+        self.init(middlewares)
+    }
+
+    public func respond<State>(to action: Action, sentTo container: AnyStateContainer<State>, forwardingTo next: Dispatch) {
         var current: Action! = action
 
         for middleware in middlewares.reversed() {
@@ -20,17 +17,11 @@ public final class CombinedMiddleware<State>: Middleware<State> {
                 return
             }
 
-            middleware.respond(to: action) { next in
+            middleware.respond(to: action, sentTo: container) { next in
                 current = next
             }
         }
 
         next(current)
-    }
-}
-
-public extension CombinedMiddleware {
-    convenience init(_ middlewares: Middleware<State>...) {
-        self.init(middlewares)
     }
 }

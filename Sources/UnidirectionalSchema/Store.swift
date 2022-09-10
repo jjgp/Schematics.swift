@@ -7,7 +7,7 @@ public final class Store<State>: Publisher, StateContainer {
 
     private init(
         dispatcher: Dispatcher,
-        middleware: Middleware<State>?,
+        middleware: Middleware?,
         mutation: @escaping Mutation<State>,
         subject: BindingValueSubject<State>
     ) {
@@ -21,9 +21,9 @@ public final class Store<State>: Publisher, StateContainer {
         }
 
         if let middleware = middleware {
-            middleware.store = eraseToAnyStateContainer()
+            let container = eraseToAnyStateContainer()
             self.dispatch = { action in
-                middleware.respond(to: action, forwardingTo: dispatch)
+                middleware.respond(to: action, sentTo: container, forwardingTo: dispatch)
             }
         } else {
             self.dispatch = dispatch
@@ -33,9 +33,9 @@ public final class Store<State>: Publisher, StateContainer {
 
 public extension Store {
     convenience init(
-        dispatcher: Dispatcher = CombinedDispatcher(OnQueueDispatcher(), BarrierDispatcher()),
+        dispatcher: Dispatcher = Dispatchers.userInteractive(),
         state: State,
-        middleware: Middleware<State>? = nil,
+        middleware: Middleware? = nil,
         mutation: @escaping Mutation<State>
     ) {
         self.init(
@@ -56,7 +56,7 @@ public extension Store {
 public extension Store {
     func scope<T>(
         state keyPath: WritableKeyPath<State, T>,
-        middleware: Middleware<T>? = nil,
+        middleware: Middleware? = nil,
         mutation: @escaping Mutation<T>
     ) -> Store<T> {
         .init(

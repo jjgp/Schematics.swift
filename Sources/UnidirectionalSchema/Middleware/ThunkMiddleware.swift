@@ -1,9 +1,8 @@
-public final class ThunkMiddleware<State>: Middleware<State> {
-    override public func respond(to action: Action, forwardingTo next: Dispatch) {
+public struct ThunkMiddleware: Middleware {
+    public func respond<State>(to action: Action, sentTo container: AnyStateContainer<State>, forwardingTo next: Dispatch) {
         switch action {
         case let action as Thunk<State>:
-            action.store = store
-            action.run()
+            action.run(with: container)
         default:
             next(action)
         }

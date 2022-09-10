@@ -1,7 +1,3 @@
-open class Middleware<State> {
-    public var store: AnyStateContainer<State>!
-
-    public init() {}
-
-    open func respond(to _: Action, forwardingTo _: Dispatch) {}
+public protocol Middleware {
+    func respond<State>(to _: Action, sentTo _: AnyStateContainer<State>, forwardingTo _: Dispatch)
 }
