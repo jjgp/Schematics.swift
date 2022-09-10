@@ -16,6 +16,7 @@ let package = Package(
     dependencies: [],
     targets: [
         .target(name: "CoreSchema", dependencies: []),
+        .testTarget(name: "CoreSchemaTests", dependencies: ["CoreSchema"]),
         .target(name: "ReactiveSchema", dependencies: ["CoreSchema"]),
         .testTarget(name: "ReactiveSchemaTests", dependencies: ["ReactiveSchema"]),
         .target(name: "UnidirectionalSchema", dependencies: ["ReactiveSchema"]),
