@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.6
 
 import PackageDescription
 
@@ -17,6 +17,7 @@ let package = Package(
     targets: [
         .target(name: "CoreSchema", dependencies: []),
         .target(name: "ReactiveSchema", dependencies: ["CoreSchema"]),
+        .testTarget(name: "ReactiveSchemaTests", dependencies: ["ReactiveSchema"]),
         .target(name: "UnidirectionalSchema", dependencies: ["ReactiveSchema"]),
         .testTarget(name: "UnidirectionalSchemaTests", dependencies: ["UnidirectionalSchema"])
     ]

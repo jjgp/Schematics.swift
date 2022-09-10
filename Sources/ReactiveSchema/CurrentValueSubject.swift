@@ -30,7 +30,7 @@ public extension CurrentValueSubject {
     }
 
     func send(mutateValue: (inout Value) -> Void) {
-        let (value, subscriptions) = lock {
+        let (value, subscriptions): (Value, Set<Subscription<Value>>) = lock {
             mutateValue(&currentValue)
             return (currentValue, self.subscriptions)
         }
@@ -43,7 +43,7 @@ public extension CurrentValueSubject {
     func subscribe(receiveValue: @escaping (Value) -> Void) -> Cancellable {
         let subscription = Subscription(receiveValue: receiveValue)
 
-        let value = lock {
+        let value: Value = lock {
             subscriptions.insert(subscription)
             return currentValue
         }
