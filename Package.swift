@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Schematics.swift",
+    name: "Schematics",
     platforms: [
         .iOS(.v15),
         .macOS(.v12)
