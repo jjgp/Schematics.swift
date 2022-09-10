@@ -1,4 +1,4 @@
-public protocol StateContainer {
+public protocol StateContainer: AnyObject {
     associatedtype State
 
     var state: State { get }
@@ -6,7 +6,7 @@ public protocol StateContainer {
     func send(_ action: Action)
 }
 
-public struct AnyStateContainer<State>: StateContainer {
+public final class AnyStateContainer<State>: StateContainer {
     private let getState: () -> State
     private let dispatch: Dispatch
 
@@ -15,7 +15,7 @@ public struct AnyStateContainer<State>: StateContainer {
         dispatch = send
     }
 
-    public init<S: StateContainer>(_ stateContainer: S) where S.State == State {
+    public convenience init<S: StateContainer>(_ stateContainer: S) where S.State == State {
         self.init(getState: { stateContainer.state }, send: stateContainer.send(_:))
     }
 }
