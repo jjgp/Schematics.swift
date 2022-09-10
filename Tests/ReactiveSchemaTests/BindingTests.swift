@@ -2,14 +2,6 @@ import ReactiveSchema
 import XCTest
 
 class BindingTests: XCTestCase {
-    struct State: Equatable {
-        struct NestedState: Equatable {
-            var count = 0
-        }
-
-        var nestedState = NestedState()
-    }
-
     func testBindingAfterScope() {
         var value = State()
         let binding = Binding {
@@ -25,5 +17,13 @@ class BindingTests: XCTestCase {
         XCTAssertEqual(value, expectedValue)
         XCTAssertEqual(binding.wrappedValue, expectedValue)
         XCTAssertEqual(scoped.wrappedValue, expectedValue.nestedState)
+    }
+
+    struct State: Equatable {
+        struct NestedState: Equatable {
+            var count = 0
+        }
+
+        var nestedState = NestedState()
     }
 }
