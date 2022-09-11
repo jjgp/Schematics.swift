@@ -79,18 +79,10 @@ public extension Store {
 
     func eraseToAnyStateContainer() -> AnyStateContainer<State> {
         AnyStateContainer(
-            getState: { [weak self] in
-                guard let self = self else {
-                    fatalError("Store has already deallocated before call to getState")
-                }
-
-                return self.state
+            getState: { [unowned self] in
+                self.state
             },
-            send: { [weak self] action in
-                guard let self = self else {
-                    fatalError("Store has already deallocated before call to send(_:)")
-                }
-
+            send: { [unowned self] action in
                 self.send(action)
             }
         )
