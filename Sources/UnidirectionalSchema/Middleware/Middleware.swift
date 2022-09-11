@@ -1,3 +1,3 @@
 public protocol Middleware {
-    func respond<State>(to _: Action, sentTo _: AnyStateContainer<State>, forwardingTo _: Dispatch)
+    func respond<State>(to action: Action, sentTo container: AnyStateContainer<State>, forwardingTo next: Dispatch)
 }

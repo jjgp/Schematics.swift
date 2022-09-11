@@ -9,7 +9,11 @@ public struct CombinedMiddleware: Middleware {
         self.init(middlewares)
     }
 
-    public func respond<State>(to action: Action, sentTo container: AnyStateContainer<State>, forwardingTo next: Dispatch) {
+    public func respond<State>(
+        to action: Action,
+        sentTo container: AnyStateContainer<State>,
+        forwardingTo next: Dispatch
+    ) {
         var current: Action! = action
 
         for middleware in middlewares.reversed() {
@@ -17,9 +21,9 @@ public struct CombinedMiddleware: Middleware {
                 return
             }
 
-            middleware.respond(to: action, sentTo: container) { next in
+            middleware.respond(to: action, sentTo: container, forwardingTo: { next in
                 current = next
-            }
+            })
         }
 
         next(current)

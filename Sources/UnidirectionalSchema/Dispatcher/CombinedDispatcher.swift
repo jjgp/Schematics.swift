@@ -1,13 +1,11 @@
-public final class CombinedDispatcher: Dispatcher {
+public struct CombinedDispatcher: Dispatcher {
     private let dispatchers: [Dispatcher]
 
     public init(_ dispatchers: [Dispatcher]) {
         self.dispatchers = dispatchers
     }
-}
 
-public extension CombinedDispatcher {
-    convenience init(_ dispatchers: Dispatcher...) {
+    public init(_ dispatchers: Dispatcher...) {
         self.init(dispatchers)
     }
 }
