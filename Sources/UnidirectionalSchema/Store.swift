@@ -5,7 +5,7 @@ public final class Store<State>: Publisher, StateContainer {
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
 
-    private init(
+    init(
         dispatcher: Dispatcher,
         middleware: Middleware?,
         mutation: @escaping Mutation<State>,
@@ -44,17 +44,6 @@ public final class Store<State>: Publisher, StateContainer {
         )
     }
 
-    public func eraseToAnyStateContainer() -> AnyStateContainer<State> {
-        AnyStateContainer(
-            getState: { [unowned self] in
-                self.state
-            },
-            send: { [unowned self] action in
-                self.send(action)
-            }
-        )
-    }
-
     public func scope<T>(
         state keyPath: WritableKeyPath<State, T>,
         middleware: Middleware? = nil,
@@ -78,6 +67,17 @@ public extension Store {
 public extension Store {
     var state: State {
         subject.wrappedValue
+    }
+
+    func eraseToAnyStateContainer() -> AnyStateContainer<State> {
+        AnyStateContainer(
+            getState: { [unowned self] in
+                self.state
+            },
+            send: { [unowned self] action in
+                self.send(action)
+            }
+        )
     }
 
     func send(_ action: Action) {
