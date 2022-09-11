@@ -31,7 +31,7 @@ public final class Store<State>: Publisher, StateContainer {
     }
 
     public convenience init(
-        dispatcher: Dispatcher = Dispatchers.userInteractive(),
+        dispatcher: Dispatcher = PassthroughDispatcher(),
         state: State,
         middleware: Middleware? = nil,
         mutation: @escaping Mutation<State>
