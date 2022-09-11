@@ -3,10 +3,8 @@ public final class BarrierDispatcher: Dispatcher {
     private var isDispatching = false
 
     public init() {}
-}
 
-public extension BarrierDispatcher {
-    func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
+    public func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
         guard !isDispatching else {
             buffer.append(action)
             return

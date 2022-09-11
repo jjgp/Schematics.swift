@@ -9,10 +9,8 @@ public struct OnQueueDispatcher: Dispatcher {
         self.queue = queue
         queue.setSpecific(key: key, value: value)
     }
-}
 
-public extension OnQueueDispatcher {
-    func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
+    public func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
         if DispatchQueue.getSpecific(key: key) == value {
             dispatch(action)
         } else {

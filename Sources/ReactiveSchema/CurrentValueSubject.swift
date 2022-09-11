@@ -17,19 +17,11 @@ public class CurrentValueSubject<Value>: Subject {
 
     private var subscriptions: Set<Subscription<Value>> = []
 
-    init(_ value: Value) {
+    public init(_ value: Value) {
         currentValue = value
     }
-}
 
-public extension CurrentValueSubject {
-    func send(_ value: Value) {
-        send { currentValue in
-            currentValue = value
-        }
-    }
-
-    func send(mutateValue: (inout Value) -> Void) {
+    public func send(mutateValue: (inout Value) -> Void) {
         let (value, subscriptions): (Value, Set<Subscription<Value>>) = lock {
             mutateValue(&currentValue)
             return (currentValue, self.subscriptions)
@@ -37,6 +29,14 @@ public extension CurrentValueSubject {
 
         subscriptions.forEach { subscription in
             subscription.send(value)
+        }
+    }
+}
+
+public extension CurrentValueSubject {
+    func send(_ value: Value) {
+        send { currentValue in
+            currentValue = value
         }
     }
 

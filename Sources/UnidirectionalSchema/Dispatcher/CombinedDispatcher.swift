@@ -8,10 +8,8 @@ public struct CombinedDispatcher: Dispatcher {
     public init(_ dispatchers: Dispatcher...) {
         self.init(dispatchers)
     }
-}
 
-public extension CombinedDispatcher {
-    func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
+    public func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
         var dispatch = dispatch
 
         for dispatcher in dispatchers.reversed() {

@@ -7,17 +7,15 @@ public struct FilterPublisher<Upstream: Publisher>: Publisher {
         self.upstream = upstream
     }
 
-    public typealias Output = Upstream.Output
-}
-
-public extension FilterPublisher {
-    func subscribe(receiveValue: @escaping (Output) -> Void) -> Cancellable {
+    public func subscribe(receiveValue: @escaping (Output) -> Void) -> Cancellable {
         upstream.subscribe { value in
             if self.isIncluded(value) {
                 receiveValue(value)
             }
         }
     }
+
+    public typealias Output = Upstream.Output
 }
 
 public extension Publisher where Output: Equatable {

@@ -29,10 +29,8 @@ public final class Store<State>: Publisher, StateContainer {
             self.dispatch = dispatch
         }
     }
-}
 
-public extension Store {
-    convenience init(
+    public convenience init(
         dispatcher: Dispatcher = Dispatchers.userInteractive(),
         state: State,
         middleware: Middleware? = nil,
@@ -45,16 +43,19 @@ public extension Store {
             subject: BindingValueSubject(state)
         )
     }
-}
 
-public extension Store {
-    func subscribe(receiveValue: @escaping (State) -> Void) -> Cancellable {
-        subject.subscribe(receiveValue: receiveValue)
+    public func eraseToAnyStateContainer() -> AnyStateContainer<State> {
+        AnyStateContainer(
+            getState: { [unowned self] in
+                self.state
+            },
+            send: { [unowned self] action in
+                self.send(action)
+            }
+        )
     }
-}
 
-public extension Store {
-    func scope<T>(
+    public func scope<T>(
         state keyPath: WritableKeyPath<State, T>,
         middleware: Middleware? = nil,
         mutation: @escaping Mutation<T>
@@ -69,22 +70,17 @@ public extension Store {
 }
 
 public extension Store {
+    func subscribe(receiveValue: @escaping (State) -> Void) -> Cancellable {
+        subject.subscribe(receiveValue: receiveValue)
+    }
+}
+
+public extension Store {
     var state: State {
         subject.wrappedValue
     }
 
     func send(_ action: Action) {
         dispatcher.receive(action: action, transmitTo: dispatch)
-    }
-
-    func eraseToAnyStateContainer() -> AnyStateContainer<State> {
-        AnyStateContainer(
-            getState: { [unowned self] in
-                self.state
-            },
-            send: { [unowned self] action in
-                self.send(action)
-            }
-        )
     }
 }

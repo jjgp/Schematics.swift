@@ -14,10 +14,8 @@ public struct Binding<Value> {
         self.getValue = getValue
         self.setValue = setValue
     }
-}
 
-public extension Binding {
-    func scope<T>(value keyPath: WritableKeyPath<Value, T>) -> Binding<T> {
+    public func scope<T>(value keyPath: WritableKeyPath<Value, T>) -> Binding<T> {
         .init {
             wrappedValue[keyPath: keyPath]
         } setValue: { value in
