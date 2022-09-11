@@ -29,3 +29,9 @@ public extension AnyStateContainer {
         dispatch(action)
     }
 }
+
+public extension StateContainer {
+    func eraseToAnyStateContainer() -> AnyStateContainer<State> {
+        .init(self)
+    }
+}

@@ -43,7 +43,7 @@ final class StoreTests: XCTestCase {
     }
 
     func testActionsSentFromSubscriptionAreBuffered() {
-        let countStore = Store(state: Count(), mutation: mutation(count:action:))
+        let countStore = Store(dispatcher: BarrierDispatcher(), state: Count(), mutation: mutation(count:action:))
         let countSpy = PublisherSpy(countStore)
 
         let cancellable = countStore.subscribe { [weak countStore] state in
