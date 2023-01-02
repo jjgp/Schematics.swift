@@ -6,14 +6,16 @@ public extension Thunk {
     func mutate(state _: inout State) {}
 }
 
-public struct ThunkMiddleware: Middleware {
+public class ThunkMiddleware<State>: Middleware {
+    private var container: AnyStateContainer<State>!
+
     public init() {}
 
-    public func respond<State>(
-        to mutation: any Mutation<State>,
-        sentTo container: AnyStateContainer<State>,
-        forwardingTo next: Dispatch<State>
-    ) {
+    public func attachTo(_ container: AnyStateContainer<State>) {
+        self.container = container
+    }
+
+    public func respond(to mutation: any Mutation<State>, forwardingTo next: Dispatch<State>) {
         if let mutation = mutation as? any Thunk<State> {
             mutation.run(container)
         } else {
