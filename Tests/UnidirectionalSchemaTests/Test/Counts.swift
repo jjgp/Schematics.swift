@@ -18,6 +18,21 @@ extension Count {
             state.count += value
         }
     }
+    
+    struct Multiply: Thunk {
+        let multiplier: Int
+        
+        init(_ multiplier: Int) {
+            self.multiplier = multiplier
+        }
+        
+        func run(_ container: AnyStateContainer<Count>) {
+            let count = container.state.count
+            container.send(Add(multiplier * count - count))
+        }
+        
+        typealias State = Count
+    }
 }
 
 // MARK: - Counts
