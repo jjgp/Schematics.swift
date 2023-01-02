@@ -29,7 +29,7 @@ public extension Effect {
 public class EffectMiddleware<State>: Middleware {
     private var container: AnyStateContainer<State>!
     private let mutationPublisher = PassthroughSubject<any Mutation<State>, Never>()
-    private let runPublisher: any Publisher<any Mutation<State>, Never>
+    private var runPublisher: (any Publisher<any Mutation<State>, Never>)!
     private let statePublisher = PassthroughSubject<State, Never>()
     private var subscription: AnyCancellable?
 
@@ -38,6 +38,19 @@ public class EffectMiddleware<State>: Middleware {
             mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
             statePublisher: statePublisher.eraseToAnyPublisher()
         )
+    }
+
+    public init(effects: [any Effect<State>]) {
+        runPublisher = Publishers.MergeMany(effects.map { effect in
+            effect.run(
+                mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
+                statePublisher: statePublisher.eraseToAnyPublisher()
+            ).eraseToAnyPublisher()
+        })
+    }
+
+    public convenience init(effects: any Effect<State>...) {
+        self.init(effects: effects)
     }
 
     public func attachTo(_ container: AnyStateContainer<State>) {
