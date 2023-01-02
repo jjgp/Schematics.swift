@@ -1,3 +1,4 @@
+import Combine
 import UnidirectionalSchema
 
 // MARK: - Count
@@ -17,6 +18,34 @@ extension Count {
         func mutate(state: inout Count) {
             state.count += value
         }
+    }
+
+    struct Decrement: Mutation, Effect {
+        private let value: Int?
+
+        init() {
+            value = nil
+        }
+
+        private init(_ value: Int) {
+            self.value = value
+        }
+
+        func mutate(state: inout Count) {
+            if let value {
+                state.count -= value
+            }
+        }
+
+        func run(
+            mutationPublisher: AnyPublisher<any Mutation<Count>, Never>
+        ) -> any Publisher<any Mutation<Count>, Never> {
+            mutationPublisher
+                .compactMap { $0 as? Count.Add }
+                .map { Self($0.value) }
+        }
+
+        typealias State = Count
     }
 
     struct Multiply: Thunk {

@@ -7,6 +7,8 @@ public protocol Effect<State> {
         mutationPublisher: AnyPublisher<any Mutation<State>, Never>,
         statePublisher: AnyPublisher<State, Never>
     ) -> any Publisher<any Mutation<State>, Never>
+
+    func run(mutationPublisher: AnyPublisher<any Mutation<State>, Never>) -> any Publisher<any Mutation<State>, Never>
 }
 
 public extension Effect {
@@ -17,7 +19,9 @@ public extension Effect {
         run(mutationPublisher: mutationPublisher)
     }
 
-    func run(mutationPublisher _: AnyPublisher<any Mutation<State>, Never>) -> any Publisher<any Mutation<State>, Never> {
+    func run(
+        mutationPublisher _: AnyPublisher<any Mutation<State>, Never>
+    ) -> any Publisher<any Mutation<State>, Never> {
         fatalError("Must implement run(mutationPublisher:)")
     }
 }
@@ -29,7 +33,7 @@ public class EffectMiddleware<State>: Middleware {
     private let statePublisher = PassthroughSubject<State, Never>()
     private var subscription: AnyCancellable?
 
-    private init(effect: any Effect<State>) {
+    public init(effect: any Effect<State>) {
         runPublisher = effect.run(
             mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
             statePublisher: statePublisher.eraseToAnyPublisher()
