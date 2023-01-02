@@ -11,14 +11,12 @@ public final class Cancellable: Combine.Cancellable, Hashable {
         execute?()
     }
 
-    public typealias Cancel = () -> Void
-}
-
-public extension Cancellable {
-    func cancel() {
+    public func cancel() {
         execute?()
         execute = nil
     }
+
+    public typealias Cancel = () -> Void
 }
 
 public extension Cancellable {

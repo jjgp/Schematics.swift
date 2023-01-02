@@ -7,18 +7,31 @@ struct Count: Equatable {
 }
 
 extension Count {
-    struct Add: Action, Equatable {
+    struct Add: Mutation {
         let value: Int
 
         init(_ value: Int) {
             self.value = value
         }
-    }
-}
 
-func mutation(count: inout Count, action: Action) {
-    if let action = action as? Count.Add {
-        count.count += action.value
+        func mutate(state: inout Count) {
+            state.count += value
+        }
+    }
+
+    struct Multiply: Thunk {
+        let multiplier: Int
+
+        init(_ multiplier: Int) {
+            self.multiplier = multiplier
+        }
+
+        func run(_ container: AnyStateContainer<Count>) {
+            let count = container.state.count
+            container.send(Add(multiplier * count - count))
+        }
+
+        typealias State = Count
     }
 }
 
@@ -30,7 +43,7 @@ struct Counts: Equatable {
 }
 
 extension Counts {
-    struct Add: Action {
+    struct Add: Mutation {
         let keyPath: WritableKeyPath<Counts, Count>
         let value: Int
 
@@ -38,11 +51,9 @@ extension Counts {
             self.keyPath = keyPath
             self.value = value
         }
-    }
-}
 
-func mutation(counts: inout Counts, action: Action) {
-    if let action = action as? Counts.Add {
-        counts[keyPath: action.keyPath].count += action.value
+        func mutate(state: inout Counts) {
+            state[keyPath: keyPath].count += value
+        }
     }
 }

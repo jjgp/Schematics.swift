@@ -1,11 +1,23 @@
-public final class ThunkMiddleware<State>: Middleware<State> {
-    override public func respond(to action: Action, forwardingTo next: Dispatch) {
-        switch action {
-        case let action as Thunk<State>:
-            action.store = store
-            action.run()
-        default:
-            next(action)
+public protocol Thunk<State>: Mutation {
+    func run(_ container: AnyStateContainer<State>)
+}
+
+public extension Thunk {
+    func mutate(state _: inout State) {}
+}
+
+public struct ThunkMiddleware: Middleware {
+    public init() {}
+
+    public func respond<State>(
+        to mutation: any Mutation<State>,
+        sentTo container: AnyStateContainer<State>,
+        forwardingTo next: Dispatch<State>
+    ) {
+        if let mutation = mutation as? any Thunk<State> {
+            mutation.run(container)
+        } else {
+            next(mutation)
         }
     }
 }

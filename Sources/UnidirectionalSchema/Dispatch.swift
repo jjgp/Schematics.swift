@@ -1,1 +1,1 @@
-public typealias Dispatch = (Action) -> Void
+public typealias Dispatch<State> = (any Mutation<State>) -> Void

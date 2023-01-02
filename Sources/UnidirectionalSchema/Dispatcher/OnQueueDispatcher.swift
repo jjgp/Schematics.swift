@@ -9,15 +9,13 @@ public struct OnQueueDispatcher: Dispatcher {
         self.queue = queue
         queue.setSpecific(key: key, value: value)
     }
-}
 
-public extension OnQueueDispatcher {
-    func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
+    public func receive<State>(mutation: any Mutation<State>, transmitTo dispatch: @escaping Dispatch<State>) {
         if DispatchQueue.getSpecific(key: key) == value {
-            dispatch(action)
+            dispatch(mutation)
         } else {
             queue.async {
-                dispatch(action)
+                dispatch(mutation)
             }
         }
     }

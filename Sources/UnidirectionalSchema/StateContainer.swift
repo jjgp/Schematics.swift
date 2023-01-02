@@ -1,22 +1,22 @@
-public protocol StateContainer {
+public protocol StateContainer: AnyObject {
     associatedtype State
 
     var state: State { get }
 
-    func send(_ action: Action)
+    func send(_ mutation: any Mutation<State>)
 }
 
-public struct AnyStateContainer<State>: StateContainer {
+public final class AnyStateContainer<State>: StateContainer {
     private let getState: () -> State
-    private let dispatch: Dispatch
+    private let dispatch: Dispatch<State>
 
-    public init(getState: @escaping () -> State, send: @escaping Dispatch) {
+    public init(getState: @escaping () -> State, send: @escaping Dispatch<State>) {
         self.getState = getState
         dispatch = send
     }
 
-    public init<S: StateContainer>(_ stateContainer: S) where S.State == State {
-        self.init(getState: { stateContainer.state }, send: stateContainer.send(_:))
+    public convenience init<S: StateContainer>(_ container: S) where S.State == State {
+        self.init(getState: { container.state }, send: container.send(_:))
     }
 }
 
@@ -25,7 +25,13 @@ public extension AnyStateContainer {
         getState()
     }
 
-    func send(_ action: Action) {
-        dispatch(action)
+    func send(_ mutation: any Mutation<State>) {
+        dispatch(mutation)
+    }
+}
+
+public extension StateContainer {
+    func eraseToAnyStateContainer() -> AnyStateContainer<State> {
+        .init(self)
     }
 }

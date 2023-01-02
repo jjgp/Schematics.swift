@@ -1,17 +1,17 @@
 import UnidirectionalSchema
 
 public final class DispatcherSpy: Dispatcher {
-    public var buffer: [() -> Action] = []
-    public var dispatched: [Action] = []
+    public var buffer: [() -> any Mutation] = []
+    public var dispatched: [any Mutation] = []
 
     public init() {}
 }
 
 public extension DispatcherSpy {
-    func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
+    func receive<State>(mutation: any Mutation<State>, transmitTo dispatch: @escaping Dispatch<State>) {
         buffer.append {
-            dispatch(action)
-            return action
+            dispatch(mutation)
+            return mutation
         }
     }
 }

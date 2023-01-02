@@ -1,48 +1,54 @@
 import ReactiveSchema
 
 public final class Store<State>: Publisher, StateContainer {
-    private var dispatch: Dispatch!
+    private var dispatch: Dispatch<State>!
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
 
-    private init(
+    init(
         dispatcher: Dispatcher,
-        middleware: Middleware<State>?,
-        mutation: @escaping Mutation<State>,
+        middleware: Middleware?,
         subject: BindingValueSubject<State>
     ) {
         self.dispatcher = dispatcher
         self.subject = subject
 
-        let dispatch: Dispatch = { action in
+        let dispatch: Dispatch<State> = { mutation in
             subject.send { state in
-                mutation(&state, action)
+                mutation.mutate(state: &state)
             }
         }
 
         if let middleware = middleware {
-            middleware.store = eraseToAnyStateContainer()
-            self.dispatch = { action in
-                middleware.respond(to: action, forwardingTo: dispatch)
+            let container = eraseToAnyStateContainer()
+            self.dispatch = { mutation in
+                middleware.respond(to: mutation, sentTo: container, forwardingTo: dispatch)
             }
         } else {
             self.dispatch = dispatch
         }
     }
-}
 
-public extension Store {
-    convenience init(
-        dispatcher: Dispatcher = CombinedDispatcher(OnQueueDispatcher(), BarrierDispatcher()),
-        state: State,
-        middleware: Middleware<State>? = nil,
-        mutation: @escaping Mutation<State>
+    public convenience init(
+        dispatcher: Dispatcher = PassthroughDispatcher(),
+        middleware: Middleware? = nil,
+        state: State
     ) {
         self.init(
             dispatcher: dispatcher,
             middleware: middleware,
-            mutation: mutation,
             subject: BindingValueSubject(state)
+        )
+    }
+
+    public func scope<T>(
+        middleware: Middleware? = nil,
+        state keyPath: WritableKeyPath<State, T>
+    ) -> Store<T> {
+        .init(
+            dispatcher: dispatcher,
+            middleware: middleware,
+            subject: subject.scope(value: keyPath)
         )
     }
 }
@@ -54,45 +60,22 @@ public extension Store {
 }
 
 public extension Store {
-    func scope<T>(
-        state keyPath: WritableKeyPath<State, T>,
-        middleware: Middleware<T>? = nil,
-        mutation: @escaping Mutation<T>
-    ) -> Store<T> {
-        .init(
-            dispatcher: dispatcher,
-            middleware: middleware,
-            mutation: mutation,
-            subject: subject.scope(value: keyPath)
-        )
-    }
-}
-
-public extension Store {
     var state: State {
         subject.wrappedValue
     }
 
-    func send(_ action: Action) {
-        dispatcher.receive(action: action, transmitTo: dispatch)
-    }
-
     func eraseToAnyStateContainer() -> AnyStateContainer<State> {
         AnyStateContainer(
-            getState: { [weak self] in
-                guard let self = self else {
-                    fatalError("Store has already deallocated before call to getState")
-                }
-
-                return self.state
+            getState: { [unowned self] in
+                self.state
             },
-            send: { [weak self] action in
-                guard let self = self else {
-                    fatalError("Store has already deallocated before call to send(_:)")
-                }
-
-                self.send(action)
+            send: { [unowned self] mutation in
+                self.send(mutation)
             }
         )
+    }
+
+    func send(_ mutation: any Mutation<State>) {
+        dispatcher.receive(mutation: mutation, transmitTo: dispatch)
     }
 }

@@ -1,12 +1,12 @@
-// swift-tools-version: 5.6
+// swift-tools-version: 5.7
 
 import PackageDescription
 
 let package = Package(
     name: "Schematics",
     platforms: [
-        .iOS(.v15),
-        .macOS(.v12)
+        .iOS(.v16),
+        .macOS(.v13)
     ],
     products: [
         .library(name: "CoreSchema", targets: ["CoreSchema"]),
