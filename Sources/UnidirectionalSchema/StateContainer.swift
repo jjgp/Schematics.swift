@@ -15,8 +15,8 @@ public final class AnyStateContainer<State>: StateContainer {
         dispatch = send
     }
 
-    public convenience init<S: StateContainer>(_ stateContainer: S) where S.State == State {
-        self.init(getState: { stateContainer.state }, send: stateContainer.send(_:))
+    public convenience init<S: StateContainer>(_ container: S) where S.State == State {
+        self.init(getState: { container.state }, send: container.send(_:))
     }
 }
 
