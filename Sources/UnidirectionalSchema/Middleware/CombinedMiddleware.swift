@@ -9,7 +9,7 @@ public struct CombinedMiddleware<State>: Middleware {
         self.init(middlewares)
     }
 
-    public mutating func attachTo(_ container: AnyStateContainer<State>) {
+    public func attachTo(_ container: AnyStateContainer<State>) {
         middlewares.forEach {
             $0.attachTo(container)
         }
