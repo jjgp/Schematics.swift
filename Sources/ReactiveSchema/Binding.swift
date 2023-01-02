@@ -1,6 +1,7 @@
 public struct Binding<Value> {
     private let getValue: () -> Value
     private let setValue: (Value) -> Void
+
     public var wrappedValue: Value {
         get {
             getValue()

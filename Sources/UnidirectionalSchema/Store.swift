@@ -5,11 +5,7 @@ public final class Store<State>: Publisher, StateContainer {
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
 
-    init(
-        dispatcher: Dispatcher,
-        middleware: (any Middleware<State>)? = nil,
-        subject: BindingValueSubject<State>
-    ) {
+    init(dispatcher: Dispatcher, middleware: (any Middleware<State>)? = nil, subject: BindingValueSubject<State>) {
         self.dispatcher = dispatcher
         self.subject = subject
 
@@ -34,22 +30,11 @@ public final class Store<State>: Publisher, StateContainer {
         middleware: (any Middleware<State>)? = nil,
         state: State
     ) {
-        self.init(
-            dispatcher: dispatcher,
-            middleware: middleware,
-            subject: BindingValueSubject(state)
-        )
+        self.init(dispatcher: dispatcher, middleware: middleware, subject: BindingValueSubject(state))
     }
 
-    public func scope<T>(
-        middleware: (any Middleware<T>)? = nil,
-        state keyPath: WritableKeyPath<State, T>
-    ) -> Store<T> {
-        .init(
-            dispatcher: dispatcher,
-            middleware: middleware,
-            subject: subject.scope(value: keyPath)
-        )
+    public func scope<T>(middleware: (any Middleware<T>)? = nil, state keyPath: WritableKeyPath<State, T>) -> Store<T> {
+        .init(dispatcher: dispatcher, middleware: middleware, subject: subject.scope(value: keyPath))
     }
 }
 
