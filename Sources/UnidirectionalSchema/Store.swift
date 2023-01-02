@@ -31,8 +31,8 @@ public final class Store<State>: Publisher, StateContainer {
 
     public convenience init(
         dispatcher: Dispatcher = PassthroughDispatcher(),
-        state: State,
-        middleware: Middleware? = nil
+        middleware: Middleware? = nil,
+        state: State
     ) {
         self.init(
             dispatcher: dispatcher,
@@ -42,8 +42,8 @@ public final class Store<State>: Publisher, StateContainer {
     }
 
     public func scope<T>(
-        state keyPath: WritableKeyPath<State, T>,
-        middleware: Middleware? = nil
+        middleware: Middleware? = nil,
+        state keyPath: WritableKeyPath<State, T>
     ) -> Store<T> {
         .init(
             dispatcher: dispatcher,
@@ -73,7 +73,6 @@ public extension Store {
                 self.send(mutation)
             }
         )
-        fatalError()
     }
 
     func send(_ mutation: any Mutation<State>) {
