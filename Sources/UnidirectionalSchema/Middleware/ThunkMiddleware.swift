@@ -6,10 +6,10 @@ public extension Thunk {
     func mutate(state _: inout State) {}
 }
 
-public struct ThunkMiddleware: Middleware {
+public struct ThunkMiddleware<State>: Middleware {
     public init() {}
 
-    public func respond<State>(
+    public func respond(
         to mutation: any Mutation<State>,
         sentTo container: AnyStateContainer<State>,
         forwardingTo next: Dispatch<State>

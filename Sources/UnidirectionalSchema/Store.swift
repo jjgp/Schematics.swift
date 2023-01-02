@@ -7,7 +7,7 @@ public final class Store<State>: Publisher, StateContainer {
 
     init(
         dispatcher: Dispatcher,
-        middleware: Middleware?,
+        middleware: (any Middleware<State>)? = nil,
         subject: BindingValueSubject<State>
     ) {
         self.dispatcher = dispatcher
@@ -31,7 +31,7 @@ public final class Store<State>: Publisher, StateContainer {
 
     public convenience init(
         dispatcher: Dispatcher = PassthroughDispatcher(),
-        middleware: Middleware? = nil,
+        middleware: (any Middleware<State>)? = nil,
         state: State
     ) {
         self.init(
@@ -42,7 +42,7 @@ public final class Store<State>: Publisher, StateContainer {
     }
 
     public func scope<T>(
-        middleware: Middleware? = nil,
+        middleware: (any Middleware<T>)? = nil,
         state keyPath: WritableKeyPath<State, T>
     ) -> Store<T> {
         .init(

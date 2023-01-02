@@ -1,15 +1,15 @@
-public struct CombinedMiddleware: Middleware {
-    private let middlewares: [Middleware]
+public struct CombinedMiddleware<State>: Middleware {
+    private let middlewares: [any Middleware<State>]
 
-    public init(_ middlewares: [Middleware]) {
+    public init(_ middlewares: [any Middleware<State>]) {
         self.middlewares = middlewares
     }
 
-    public init(_ middlewares: Middleware...) {
+    public init(_ middlewares: any Middleware<State>...) {
         self.init(middlewares)
     }
 
-    public func respond<State>(
+    public func respond(
         to mutation: any Mutation<State>,
         sentTo container: AnyStateContainer<State>,
         forwardingTo next: Dispatch<State>
