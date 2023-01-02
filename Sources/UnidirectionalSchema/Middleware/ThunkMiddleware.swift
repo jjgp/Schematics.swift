@@ -3,12 +3,12 @@ public protocol Thunk<State>: Mutation {
 }
 
 public extension Thunk {
-    func mutate(state: inout State) {}
+    func mutate(state _: inout State) {}
 }
 
 public struct ThunkMiddleware: Middleware {
     public init() {}
-    
+
     public func respond<State>(
         to mutation: any Mutation<State>,
         sentTo container: AnyStateContainer<State>,

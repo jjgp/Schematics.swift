@@ -13,7 +13,7 @@ public struct CombinedDispatcher: Dispatcher {
         var dispatch = dispatch
 
         for dispatcher in dispatchers.reversed() {
-            dispatch = { [dispatch] action in
+            dispatch = { [dispatch] mutation in
                 dispatcher.receive(mutation: mutation, transmitTo: dispatch)
             }
         }
