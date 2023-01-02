@@ -1,9 +1,11 @@
+///
 public struct BindingValueSubject<Value>: Subject {
     private let binding: Binding<Value>
     private let sendValue: (Value) -> Void
     private let sendMutateValue: (@escaping (inout Value) -> Void) -> Void
     private let subscribeReceiveValue: (@escaping (Value) -> Void) -> Cancellable
 
+    ///
     public var wrappedValue: Value {
         get {
             binding.wrappedValue
@@ -25,6 +27,7 @@ public struct BindingValueSubject<Value>: Subject {
         self.subscribeReceiveValue = subscribeReceiveValue
     }
 
+    ///
     public init(_ value: Value) {
         let subject = CurrentValueSubject(value)
         let binding = Binding {
@@ -41,6 +44,7 @@ public struct BindingValueSubject<Value>: Subject {
         )
     }
 
+    ///
     public func scope<T>(value keyPath: WritableKeyPath<Value, T>) -> BindingValueSubject<T> {
         .init(binding: binding.scope(value: keyPath)) { value in
             sendMutateValue { (root: inout Value) in
@@ -57,16 +61,19 @@ public struct BindingValueSubject<Value>: Subject {
         }
     }
 
+    ///
     public func send(mutateValue: @escaping (inout Value) -> Void) {
         sendMutateValue(mutateValue)
     }
 }
 
 public extension BindingValueSubject {
+    ///
     func send(_ value: Value) {
         sendValue(value)
     }
 
+    ///
     func subscribe(receiveValue: @escaping (Value) -> Void) -> Cancellable {
         subscribeReceiveValue(receiveValue)
     }

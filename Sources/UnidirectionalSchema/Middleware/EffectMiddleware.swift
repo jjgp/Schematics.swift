@@ -1,17 +1,23 @@
 import Combine
 
+///
 public protocol Effect<State> {
+    ///
     associatedtype State
 
+    ///
     func run(
         mutationPublisher: AnyPublisher<any Mutation<State>, Never>,
         statePublisher: AnyPublisher<State, Never>
     ) -> any Publisher<any Mutation<State>, Never>
 
+    ///
     func run(mutationPublisher: AnyPublisher<any Mutation<State>, Never>) -> any Publisher<any Mutation<State>, Never>
 }
 
+///
 public extension Effect {
+    ///
     func run(
         mutationPublisher: AnyPublisher<any Mutation<State>, Never>,
         statePublisher _: AnyPublisher<State, Never>
@@ -19,6 +25,7 @@ public extension Effect {
         run(mutationPublisher: mutationPublisher)
     }
 
+    ///
     func run(
         mutationPublisher _: AnyPublisher<any Mutation<State>, Never>
     ) -> any Publisher<any Mutation<State>, Never> {
@@ -26,6 +33,7 @@ public extension Effect {
     }
 }
 
+///
 public class EffectMiddleware<State>: Middleware {
     private var container: AnyStateContainer<State>!
     private let mutationPublisher = PassthroughSubject<any Mutation<State>, Never>()
@@ -33,6 +41,7 @@ public class EffectMiddleware<State>: Middleware {
     private let statePublisher = PassthroughSubject<State, Never>()
     private var subscription: AnyCancellable?
 
+    ///
     public init(effect: any Effect<State>) {
         runPublisher = effect.run(
             mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
@@ -40,6 +49,7 @@ public class EffectMiddleware<State>: Middleware {
         )
     }
 
+    ///
     public init(effects: [any Effect<State>]) {
         runPublisher = Publishers.MergeMany(effects.map { effect in
             effect.run(
@@ -49,10 +59,12 @@ public class EffectMiddleware<State>: Middleware {
         })
     }
 
+    ///
     public convenience init(effects: any Effect<State>...) {
         self.init(effects: effects)
     }
 
+    ///
     public func attachTo(_ container: AnyStateContainer<State>) {
         self.container = container
 
@@ -61,6 +73,7 @@ public class EffectMiddleware<State>: Middleware {
         }
     }
 
+    ///
     public func respond(
         to mutation: any Mutation<State>,
         forwardingTo next: Dispatch<State>
