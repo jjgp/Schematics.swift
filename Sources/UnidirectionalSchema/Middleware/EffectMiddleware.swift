@@ -22,22 +22,34 @@ public extension Effect {
     }
 }
 
-public struct EffectMiddleware<State>: Middleware {
+public class EffectMiddleware<State>: Middleware {
+    private var container: AnyStateContainer<State>!
     private let mutationPublisher = PassthroughSubject<any Mutation<State>, Never>()
-    private var cancellables = Set<AnyCancellable>()
+    private let runPublisher: any Publisher<any Mutation<State>, Never>
     private let statePublisher = PassthroughSubject<State, Never>()
+    private var subscription: AnyCancellable?
 
-    private init() {}
+    private init(effect: any Effect<State>) {
+        runPublisher = effect.run(
+            mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
+            statePublisher: statePublisher.eraseToAnyPublisher()
+        )
+    }
+
+    public func attachTo(_ container: AnyStateContainer<State>) {
+        self.container = container
+
+        subscription = runPublisher.sink { mutation in
+            container.send(mutation)
+        }
+    }
 
     public func respond(
         to mutation: any Mutation<State>,
-        sentTo container: AnyStateContainer<State>,
         forwardingTo next: Dispatch<State>
     ) {
         next(mutation)
         statePublisher.send(container.state)
         mutationPublisher.send(mutation)
     }
-
-    private typealias EffectState = State
 }
