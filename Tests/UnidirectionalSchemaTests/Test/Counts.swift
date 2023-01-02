@@ -7,18 +7,16 @@ struct Count: Equatable {
 }
 
 extension Count {
-    struct Add: Action, Equatable {
+    struct Add: Mutation {
         let value: Int
-
+        
         init(_ value: Int) {
             self.value = value
         }
-    }
-}
-
-func mutation(count: inout Count, action: Action) {
-    if let action = action as? Count.Add {
-        count.count += action.value
+        
+        func mutate(state: inout Count) {
+            state.count += value
+        }
     }
 }
 
@@ -30,19 +28,17 @@ struct Counts: Equatable {
 }
 
 extension Counts {
-    struct Add: Action {
+    struct Add: Mutation {
         let keyPath: WritableKeyPath<Counts, Count>
         let value: Int
-
+        
         init(_ value: Int, to keyPath: WritableKeyPath<Counts, Count>) {
             self.keyPath = keyPath
             self.value = value
         }
-    }
-}
 
-func mutation(counts: inout Counts, action: Action) {
-    if let action = action as? Counts.Add {
-        counts[keyPath: action.keyPath].count += action.value
+        func mutate(state: inout Counts) {
+            state[keyPath: keyPath].count += value
+        }
     }
 }

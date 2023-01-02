@@ -1,1 +1,5 @@
-public typealias Mutation<State> = (inout State, Action) -> Void
+public protocol Mutation<State> {
+    associatedtype State
+    
+    func mutate(state: inout State)
+}

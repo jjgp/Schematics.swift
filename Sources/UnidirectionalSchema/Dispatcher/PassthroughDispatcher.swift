@@ -2,7 +2,7 @@ public struct PassthroughDispatcher: Dispatcher {
     public init() {}
 
     @inlinable
-    public func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
-        dispatch(action)
+    public func receive<State>(mutation: any Mutation<State>, transmitTo dispatch: @escaping Dispatch<State>) {
+        dispatch(mutation)
     }
 }

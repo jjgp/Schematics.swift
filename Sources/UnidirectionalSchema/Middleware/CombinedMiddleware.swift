@@ -10,18 +10,18 @@ public struct CombinedMiddleware: Middleware {
     }
 
     public func respond<State>(
-        to action: Action,
+        to mutation: any Mutation<State>,
         sentTo container: AnyStateContainer<State>,
-        forwardingTo next: Dispatch
+        forwardingTo next: Dispatch<State>
     ) {
-        var current: Action! = action
+        var current: (any Mutation<State>)! = mutation
 
         for middleware in middlewares.reversed() {
-            guard let action = current else {
+            guard let mutation = current else {
                 return
             }
 
-            middleware.respond(to: action, sentTo: container, forwardingTo: { next in
+            middleware.respond(to: mutation, sentTo: container, forwardingTo: { next in
                 current = next
             })
         }

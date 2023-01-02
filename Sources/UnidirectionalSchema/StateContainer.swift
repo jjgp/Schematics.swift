@@ -3,14 +3,14 @@ public protocol StateContainer: AnyObject {
 
     var state: State { get }
 
-    func send(_ action: Action)
+    func send(_ mutation: any Mutation<State>)
 }
 
 public final class AnyStateContainer<State>: StateContainer {
     private let getState: () -> State
-    private let dispatch: Dispatch
+    private let dispatch: Dispatch<State>
 
-    public init(getState: @escaping () -> State, send: @escaping Dispatch) {
+    public init(getState: @escaping () -> State, send: @escaping Dispatch<State>) {
         self.getState = getState
         dispatch = send
     }
@@ -25,8 +25,8 @@ public extension AnyStateContainer {
         getState()
     }
 
-    func send(_ action: Action) {
-        dispatch(action)
+    func send(_ mutation: any Mutation<State>) {
+        dispatch(mutation)
     }
 }
 

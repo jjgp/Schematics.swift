@@ -1,29 +1,28 @@
 import ReactiveSchema
 
 public final class Store<State>: Publisher, StateContainer {
-    private var dispatch: Dispatch!
+    private var dispatch: Dispatch<State>!
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
 
     init(
         dispatcher: Dispatcher,
         middleware: Middleware?,
-        mutation: @escaping Mutation<State>,
         subject: BindingValueSubject<State>
     ) {
         self.dispatcher = dispatcher
         self.subject = subject
 
-        let dispatch: Dispatch = { action in
+        let dispatch: Dispatch<State> = { mutation in
             subject.send { state in
-                mutation(&state, action)
+                mutation.mutate(state: &state)
             }
         }
 
         if let middleware = middleware {
             let container = eraseToAnyStateContainer()
-            self.dispatch = { action in
-                middleware.respond(to: action, sentTo: container, forwardingTo: dispatch)
+            self.dispatch = { mutation in
+                middleware.respond(to: mutation, sentTo: container, forwardingTo: dispatch)
             }
         } else {
             self.dispatch = dispatch
@@ -33,26 +32,22 @@ public final class Store<State>: Publisher, StateContainer {
     public convenience init(
         dispatcher: Dispatcher = PassthroughDispatcher(),
         state: State,
-        middleware: Middleware? = nil,
-        mutation: @escaping Mutation<State>
+        middleware: Middleware? = nil
     ) {
         self.init(
             dispatcher: dispatcher,
             middleware: middleware,
-            mutation: mutation,
             subject: BindingValueSubject(state)
         )
     }
 
     public func scope<T>(
         state keyPath: WritableKeyPath<State, T>,
-        middleware: Middleware? = nil,
-        mutation: @escaping Mutation<T>
+        middleware: Middleware? = nil
     ) -> Store<T> {
         .init(
             dispatcher: dispatcher,
             middleware: middleware,
-            mutation: mutation,
             subject: subject.scope(value: keyPath)
         )
     }
@@ -74,13 +69,14 @@ public extension Store {
             getState: { [unowned self] in
                 self.state
             },
-            send: { [unowned self] action in
-                self.send(action)
+            send: { [unowned self] mutation in
+                self.send(mutation)
             }
         )
+        fatalError()
     }
 
-    func send(_ action: Action) {
-        dispatcher.receive(action: action, transmitTo: dispatch)
+    func send(_ mutation: any Mutation<State>) {
+        dispatcher.receive(mutation: mutation, transmitTo: dispatch)
     }
 }

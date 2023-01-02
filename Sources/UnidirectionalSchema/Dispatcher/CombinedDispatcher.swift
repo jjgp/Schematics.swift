@@ -9,15 +9,15 @@ public struct CombinedDispatcher: Dispatcher {
         self.init(dispatchers)
     }
 
-    public func receive(action: Action, transmitTo dispatch: @escaping Dispatch) {
+    public func receive<State>(mutation: any Mutation<State>, transmitTo dispatch: @escaping Dispatch<State>) {
         var dispatch = dispatch
 
         for dispatcher in dispatchers.reversed() {
             dispatch = { [dispatch] action in
-                dispatcher.receive(action: action, transmitTo: dispatch)
+                dispatcher.receive(mutation: mutation, transmitTo: dispatch)
             }
         }
 
-        dispatch(action)
+        dispatch(mutation)
     }
 }

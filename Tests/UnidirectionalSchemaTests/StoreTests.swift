@@ -5,7 +5,7 @@ import XCTest
 
 final class StoreTests: XCTestCase {
     func testActionsOnCountStore() {
-        let store = Store(state: Count(), mutation: mutation(count:action:))
+        let store = Store(state: Count())
         let spy = PublisherSpy(store)
 
         store.send(Count.Add(10))
@@ -16,11 +16,11 @@ final class StoreTests: XCTestCase {
     }
 
     func testMultipleStoresInScope() {
-        let countsStore = Store(state: Counts(), mutation: mutation(counts:action:))
+        let countsStore = Store(state: Counts())
         let countsSpy = PublisherSpy(countsStore)
-        let firstCountStore = countsStore.scope(state: \.first, mutation: mutation(count:action:))
+        let firstCountStore = countsStore.scope(state: \.first)
         let firstCountSpy = PublisherSpy(firstCountStore.removeDuplicates())
-        let secondCountStore = countsStore.scope(state: \.second, mutation: mutation(count:action:))
+        let secondCountStore = countsStore.scope(state: \.second)
         let secondCountSpy = PublisherSpy(secondCountStore.removeDuplicates())
 
         firstCountStore.send(Count.Add(10))
@@ -41,8 +41,4 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(firstCountOutputs, [0, 10, -10])
         XCTAssertEqual(secondCountOutputs, [0, -20, 20])
     }
-
-//    func testBuilder() {
-//        Store.builder()
-//    }
 }
