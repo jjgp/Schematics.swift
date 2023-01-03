@@ -15,6 +15,9 @@ jobs:
     strategy:
       matrix:
         platform: ["iOS Simulator,OS=16.2,name=iPhone 14", "macos,OS=13.1"]
+        xcode: ["Xcode_14.2.app"]
     steps:
       - uses: actions/checkout@v3
       - run: xcodebuild test -scheme Schematics-Package -destination platform="${{ matrix.platform }}"
+      - env:
+          DEVELOPER_DIR: /Applications/${{ matrix.xcode }}/Contents/Developer
