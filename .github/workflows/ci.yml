@@ -11,11 +11,10 @@ on:
 
 jobs:
   test:
-    runs-on: macos-12
+    runs-on: macos-latest
     strategy:
       matrix:
-        platform: ["iOS Simulator,name=iPhone 14", "macos"]
-        xcode: ["14.2"]
+        platform: ["iOS Simulator,OS=16.2,name=iPhone 14", "macos,OS=13.1"]
     steps:
       - uses: actions/checkout@v3
       - run: xcodebuild test -scheme Schematics-Package -destination platform="${{ matrix.platform }}"
