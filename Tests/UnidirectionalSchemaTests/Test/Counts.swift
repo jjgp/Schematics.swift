@@ -20,14 +20,10 @@ extension Count {
         }
     }
 
-    struct Decrement: Mutation, Effect {
+    struct Decrement: Mutation, Reaction {
         private let value: Int?
 
-        init() {
-            value = nil
-        }
-
-        private init(_ value: Int) {
+        init(_ value: Int? = nil) {
             self.value = value
         }
 

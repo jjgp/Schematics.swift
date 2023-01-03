@@ -2,10 +2,10 @@ import Combine
 import UnidirectionalSchema
 import XCTest
 
-final class EffectMiddlewareTests: XCTestCase {
-    func testEffectMiddlewareInCountStore() {
+final class ReactionMiddlewareTests: XCTestCase {
+    func testReactionMiddlewareInCountStore() {
         let store = Store(
-            middleware: EffectMiddleware(effect: Count.Decrement()),
+            middleware: ReactionMiddleware(reaction: Count.Decrement()),
             state: Count()
         )
         let spy = PublisherSpy(store)
@@ -16,9 +16,9 @@ final class EffectMiddlewareTests: XCTestCase {
         XCTAssertEqual(outputs, [0, 10, 0])
     }
 
-    func testMultipleEffectMiddlewareInCountStore() {
+    func testMultipleReactionMiddlewareInCountStore() {
         let store = Store(
-            middleware: EffectMiddleware(effects: Count.Decrement(), Count.Decrement()),
+            middleware: ReactionMiddleware(reactions: Count.Decrement(), Count.Decrement()),
             state: Count()
         )
         let spy = PublisherSpy(store)

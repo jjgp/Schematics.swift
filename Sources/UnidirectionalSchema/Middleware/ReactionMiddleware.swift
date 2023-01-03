@@ -1,7 +1,7 @@
 import Combine
 
 ///
-public protocol Effect<State> {
+public protocol Reaction<State> {
     ///
     associatedtype State
 
@@ -16,7 +16,7 @@ public protocol Effect<State> {
 }
 
 ///
-public extension Effect {
+public extension Reaction {
     ///
     func run(
         mutationPublisher: AnyPublisher<any Mutation<State>, Never>,
@@ -34,7 +34,7 @@ public extension Effect {
 }
 
 ///
-public class EffectMiddleware<State>: Middleware {
+public class ReactionMiddleware<State>: Middleware {
     private var container: AnyStateContainer<State>!
     private let mutationPublisher = PassthroughSubject<any Mutation<State>, Never>()
     private var runPublisher: (any Publisher<any Mutation<State>, Never>)!
@@ -42,17 +42,17 @@ public class EffectMiddleware<State>: Middleware {
     private var subscription: AnyCancellable?
 
     ///
-    public init(effect: any Effect<State>) {
-        runPublisher = effect.run(
+    public init(reaction: any Reaction<State>) {
+        runPublisher = reaction.run(
             mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
             statePublisher: statePublisher.eraseToAnyPublisher()
         )
     }
 
     ///
-    public init(effects: [any Effect<State>]) {
-        runPublisher = Publishers.MergeMany(effects.map { effect in
-            effect.run(
+    public init(reactions: [any Reaction<State>]) {
+        runPublisher = Publishers.MergeMany(reactions.map { reaction in
+            reaction.run(
                 mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
                 statePublisher: statePublisher.eraseToAnyPublisher()
             ).eraseToAnyPublisher()
@@ -60,8 +60,8 @@ public class EffectMiddleware<State>: Middleware {
     }
 
     ///
-    public convenience init(effects: any Effect<State>...) {
-        self.init(effects: effects)
+    public convenience init(reactions: any Reaction<State>...) {
+        self.init(reactions: reactions)
     }
 
     ///
