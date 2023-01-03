@@ -1,5 +1,6 @@
 import ReactiveSchema
 
+///
 public final class Store<State>: Publisher, StateContainer {
     private var dispatch: Dispatch<State>!
     private let dispatcher: Dispatcher
@@ -26,6 +27,7 @@ public final class Store<State>: Publisher, StateContainer {
         }
     }
 
+    ///
     public convenience init(
         dispatcher: Dispatcher = PassthroughDispatcher(),
         middleware: (any Middleware<State>)? = nil,
@@ -34,22 +36,26 @@ public final class Store<State>: Publisher, StateContainer {
         self.init(dispatcher: dispatcher, middleware: middleware, subject: BindingValueSubject(state))
     }
 
+    ///
     public func scope<T>(middleware: (any Middleware<T>)? = nil, state keyPath: WritableKeyPath<State, T>) -> Store<T> {
         .init(dispatcher: dispatcher, middleware: middleware, subject: subject.scope(value: keyPath))
     }
 }
 
 public extension Store {
+    ///
     func subscribe(receiveValue: @escaping (State) -> Void) -> Cancellable {
         subject.subscribe(receiveValue: receiveValue)
     }
 }
 
 public extension Store {
+    ///
     var state: State {
         subject.wrappedValue
     }
 
+    ///
     func eraseToAnyStateContainer() -> AnyStateContainer<State> {
         AnyStateContainer(
             getState: { [unowned self] in
@@ -61,6 +67,7 @@ public extension Store {
         )
     }
 
+    ///
     func send(_ mutation: any Mutation<State>) {
         dispatcher.receive(mutation: mutation, transmitTo: dispatch)
     }

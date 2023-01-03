@@ -1,9 +1,12 @@
 import CoreSchema
 import Foundation
 
+///
 public class CurrentValueSubject<Value>: Subject {
     private var currentValue: Value
     private let lock: UnfairLock = .init()
+
+    ///
     public var value: Value {
         get {
             lock {
@@ -17,10 +20,12 @@ public class CurrentValueSubject<Value>: Subject {
 
     private var subscriptions: Set<Subscription<Value>> = []
 
+    ///
     public init(_ value: Value) {
         currentValue = value
     }
 
+    ///
     public func send(mutateValue: (inout Value) -> Void) {
         let (value, subscriptions): (Value, Set<Subscription<Value>>) = lock {
             mutateValue(&currentValue)
@@ -34,12 +39,14 @@ public class CurrentValueSubject<Value>: Subject {
 }
 
 public extension CurrentValueSubject {
+    ///
     func send(_ value: Value) {
         send { currentValue in
             currentValue = value
         }
     }
 
+    ///
     func subscribe(receiveValue: @escaping (Value) -> Void) -> Cancellable {
         let subscription = Subscription(receiveValue: receiveValue)
 

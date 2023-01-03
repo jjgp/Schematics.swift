@@ -2,6 +2,7 @@ import Combine
 import CoreSchema
 import Foundation
 
+///
 public struct BridgedPublisher<Output>: Combine.Publisher {
     private let subscribeReceiveValue: (@escaping (Output) -> Void) -> Cancellable
 
@@ -9,15 +10,18 @@ public struct BridgedPublisher<Output>: Combine.Publisher {
         subscribeReceiveValue = publisher.subscribe(receiveValue:)
     }
 
+    ///
     public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
         let subscription = Subscription(subscriber: subscriber, subscribeReceiveValue: subscribeReceiveValue)
         subscriber.receive(subscription: subscription)
     }
 
+    ///
     public typealias Failure = Never
 }
 
 public extension Publisher {
+    ///
     func bridged() -> BridgedPublisher<Output> {
         .init(self)
     }
