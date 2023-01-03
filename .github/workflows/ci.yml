@@ -19,5 +19,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: xcodebuild test -scheme Schematics-Package -destination platform="${{ matrix.platform }}"
-      - env:
+        env:
           DEVELOPER_DIR: /Applications/${{ matrix.xcode }}/Contents/Developer
