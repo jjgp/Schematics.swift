@@ -18,6 +18,8 @@ jobs:
         xcode: ["Xcode_14.1.app"]
     steps:
       - uses: actions/checkout@v3
-      - run: xcodebuild test -scheme Schematics-Package -destination platform="${{ matrix.platform }}"
+      - run: |
+          ls -al /Applications/
+          xcodebuild test -scheme Schematics-Package -destination platform="${{ matrix.platform }}"
         env:
           DEVELOPER_DIR: /Applications/${{ matrix.xcode }}/Contents/Developer
