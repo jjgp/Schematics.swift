@@ -7,6 +7,8 @@ struct Count: Equatable {
     var count = 0
 }
 
+// MARK: - Count Mutations
+
 extension Count {
     struct Add: Mutation {
         let value: Int
@@ -21,7 +23,7 @@ extension Count {
     }
 
     struct Decrement: Mutation, Reaction {
-        private let value: Int?
+        let value: Int?
 
         init(_ value: Int? = nil) {
             self.value = value
@@ -67,6 +69,8 @@ struct Counts: Equatable {
     var second: Count = .init()
 }
 
+// MARK: - Counts Mutations
+
 extension Counts {
     struct Add: Mutation {
         let keyPath: WritableKeyPath<Counts, Count>
@@ -80,5 +84,42 @@ extension Counts {
         func mutate(state: inout Counts) {
             state[keyPath: keyPath].count += value
         }
+    }
+
+    struct Decrement: Mutation, Reaction {
+        let keyPath: WritableKeyPath<Counts, Count>?
+        let value: Int?
+
+        init(_ value: Int? = nil, to keyPath: WritableKeyPath<Counts, Count>? = nil) {
+            self.keyPath = keyPath
+            self.value = value
+        }
+
+        func mutate(state: inout Counts) {
+            if let keyPath, let value {
+                state[keyPath: keyPath].count -= value
+            }
+        }
+
+        func run(
+            mutationPublisher: AnyPublisher<any Mutation<Counts>, Never>
+        ) -> any Publisher<any Mutation<Counts>, Never> {
+            mutationPublisher
+                .compactMap { $0 as? Mutations.Scope<Counts, Count> }
+                .compactMap {
+                    // TODO: would be nice to extract the leaf mutation
+                    guard let add = $0.mutation as? Count.Add else {
+                        return nil
+                    }
+
+                    // TODO: would be nice to extract the "to leaf" keyPath
+                    return (add.value, $0.keyPath)
+                }
+                .map { value, keyPath in
+                    Self(value, to: keyPath)
+                }
+        }
+
+        typealias State = Counts
     }
 }
