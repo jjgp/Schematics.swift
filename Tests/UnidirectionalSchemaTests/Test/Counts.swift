@@ -115,9 +115,7 @@ extension Counts {
                     // TODO: would be nice to extract the "to leaf" keyPath
                     return (add.value, $0.keyPath)
                 }
-                .map { value, keyPath in
-                    Self(value, to: keyPath)
-                }
+                .map(Self.init(_:to:))
         }
 
         typealias State = Counts

@@ -9,17 +9,14 @@ public protocol Mutation<State> {
 
 ///
 public enum Mutations {
-    // TODO: some way to unscope/flatten the action
-    // Need to think more on the telescoping/flattening of the Scope action
-
     ///
-    public struct Scope<State, T>: Mutation {
+    public struct Scope<State, Substate>: Mutation {
         ///
-        public let keyPath: WritableKeyPath<State, T>
+        public let keyPath: WritableKeyPath<State, Substate>
         ///
-        public let mutation: any Mutation<T>
+        public let mutation: any Mutation<Substate>
 
-        init(mutation: any Mutation<T>, state keyPath: WritableKeyPath<State, T>) {
+        init(mutation: any Mutation<Substate>, state keyPath: WritableKeyPath<State, Substate>) {
             self.keyPath = keyPath
             self.mutation = mutation
         }
