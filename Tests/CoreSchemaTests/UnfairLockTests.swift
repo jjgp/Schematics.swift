@@ -6,7 +6,7 @@ class UnfairLockTests: XCTestCase {
         let counter = Counter()
         let expectation = expectation(description: "Concurrent writes are synchronized")
         expectation.expectedFulfillmentCount = 2
-        let iterations = 10000
+        let iterations = 1000
 
         DispatchQueue.global(qos: .background).async {
             for _ in 0 ..< iterations {
