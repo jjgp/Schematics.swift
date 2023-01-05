@@ -55,7 +55,6 @@ public final class Store<State>: Publisher, StateContainer {
             dispatch: dispatch,
             dispatcher: dispatcher,
             middleware: middleware,
-            // TODO: evaluate if a binding subject is still needed in this case?
             subject: subject.scope(value: keyPath)
         )
     }
@@ -71,7 +70,6 @@ public extension Store {
 public extension Store {
     ///
     var state: State {
-        // It seems that this is the major reason a binding value subject is needed
         subject.wrappedValue
     }
 
