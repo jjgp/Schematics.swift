@@ -1,5 +1,5 @@
 ///
-public protocol Publisher {
+public protocol Publisher<Output> {
     ///
     associatedtype Output
 

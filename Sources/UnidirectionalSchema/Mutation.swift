@@ -6,3 +6,6 @@ public protocol Mutation<State> {
     ///
     func mutate(state: inout State)
 }
+
+///
+public enum Mutations {}

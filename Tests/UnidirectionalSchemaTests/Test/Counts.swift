@@ -7,6 +7,8 @@ struct Count: Equatable {
     var count = 0
 }
 
+// MARK: - Count Mutations
+
 extension Count {
     struct Add: Mutation {
         let value: Int
@@ -21,7 +23,7 @@ extension Count {
     }
 
     struct Decrement: Mutation, Reaction {
-        private let value: Int?
+        let value: Int?
 
         init(_ value: Int? = nil) {
             self.value = value
@@ -40,8 +42,6 @@ extension Count {
                 .compactMap { $0 as? Count.Add }
                 .map { Self($0.value) }
         }
-
-        typealias State = Count
     }
 
     struct Multiply: Thunk {
@@ -55,8 +55,6 @@ extension Count {
             let count = container.state.count
             container.send(Add(multiplier * count - count))
         }
-
-        typealias State = Count
     }
 }
 
@@ -66,6 +64,8 @@ struct Counts: Equatable {
     var first: Count = .init()
     var second: Count = .init()
 }
+
+// MARK: - Counts Mutations
 
 extension Counts {
     struct Add: Mutation {
@@ -79,6 +79,37 @@ extension Counts {
 
         func mutate(state: inout Counts) {
             state[keyPath: keyPath].count += value
+        }
+    }
+
+    struct Decrement: Mutation, Reaction {
+        let keyPath: WritableKeyPath<Counts, Count>?
+        let value: Int?
+
+        init(_ value: Int? = nil, to keyPath: WritableKeyPath<Counts, Count>? = nil) {
+            self.keyPath = keyPath
+            self.value = value
+        }
+
+        func mutate(state: inout Counts) {
+            if let keyPath, let value {
+                state[keyPath: keyPath].count -= value
+            }
+        }
+
+        func run(
+            mutationPublisher: AnyPublisher<any Mutation<Counts>, Never>
+        ) -> any Publisher<any Mutation<Counts>, Never> {
+            mutationPublisher
+                .compactMap { $0 as? Mutations.Scope<Counts, Count> }
+                .compactMap { scope in
+                    guard let add = scope.mutation as? Count.Add else {
+                        return nil
+                    }
+
+                    return (add.value, scope.keyPath)
+                }
+                .map(Self.init(_:to:))
         }
     }
 }

@@ -6,15 +6,14 @@ public final class Store<State>: Publisher, StateContainer {
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
 
-    init(dispatcher: Dispatcher, middleware: (any Middleware<State>)? = nil, subject: BindingValueSubject<State>) {
+    init(
+        dispatch: Dispatch<State>!,
+        dispatcher: Dispatcher,
+        middleware: (any Middleware<State>)? = nil,
+        subject: BindingValueSubject<State>
+    ) {
         self.dispatcher = dispatcher
         self.subject = subject
-
-        let dispatch: Dispatch<State> = { mutation in
-            subject.send { state in
-                mutation.mutate(state: &state)
-            }
-        }
 
         if let middleware = middleware {
             middleware.attachTo(eraseToAnyStateContainer())
@@ -27,6 +26,16 @@ public final class Store<State>: Publisher, StateContainer {
         }
     }
 
+    convenience init(dispatcher: Dispatcher, middleware: (any Middleware<State>)? = nil, subject: BindingValueSubject<State>) {
+        let dispatch: Dispatch<State> = { mutation in
+            subject.send { state in
+                mutation.mutate(state: &state)
+            }
+        }
+
+        self.init(dispatch: dispatch, dispatcher: dispatcher, middleware: middleware, subject: subject)
+    }
+
     ///
     public convenience init(
         dispatcher: Dispatcher = PassthroughDispatcher(),
@@ -37,8 +46,20 @@ public final class Store<State>: Publisher, StateContainer {
     }
 
     ///
-    public func scope<T>(middleware: (any Middleware<T>)? = nil, state keyPath: WritableKeyPath<State, T>) -> Store<T> {
-        .init(dispatcher: dispatcher, middleware: middleware, subject: subject.scope(value: keyPath))
+    public func scope<Substate>(
+        middleware: (any Middleware<Substate>)? = nil,
+        state keyPath: WritableKeyPath<State, Substate>
+    ) -> Store<Substate> {
+        let dispatch: Dispatch<Substate> = { [unowned self] mutation in
+            self.dispatch(Mutations.Scope(mutation: mutation, state: keyPath))
+        }
+
+        return .init(
+            dispatch: dispatch,
+            dispatcher: dispatcher,
+            middleware: middleware,
+            subject: subject.scope(value: keyPath)
+        )
     }
 }
 
@@ -70,5 +91,25 @@ public extension Store {
     ///
     func send(_ mutation: any Mutation<State>) {
         dispatcher.receive(mutation: mutation, transmitTo: dispatch)
+    }
+}
+
+public extension Mutations {
+    ///
+    struct Scope<State, Substate>: Mutation {
+        ///
+        public let keyPath: WritableKeyPath<State, Substate>
+        ///
+        public let mutation: any Mutation<Substate>
+
+        init(mutation: any Mutation<Substate>, state keyPath: WritableKeyPath<State, Substate>) {
+            self.keyPath = keyPath
+            self.mutation = mutation
+        }
+
+        ///
+        public func mutate(state: inout State) {
+            mutation.mutate(state: &state[keyPath: keyPath])
+        }
     }
 }
