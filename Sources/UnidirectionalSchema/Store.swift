@@ -6,15 +6,14 @@ public final class Store<State>: Publisher, StateContainer {
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
 
-    init(dispatcher: Dispatcher, middleware: (any Middleware<State>)? = nil, subject: BindingValueSubject<State>) {
+    init(
+        dispatch: Dispatch<State>!,
+        dispatcher: Dispatcher,
+        middleware: (any Middleware<State>)? = nil,
+        subject: BindingValueSubject<State>
+    ) {
         self.dispatcher = dispatcher
         self.subject = subject
-
-        let dispatch: Dispatch<State> = { mutation in
-            subject.send { state in
-                mutation.mutate(state: &state)
-            }
-        }
 
         if let middleware = middleware {
             middleware.attachTo(eraseToAnyStateContainer())
@@ -25,6 +24,16 @@ public final class Store<State>: Publisher, StateContainer {
         } else {
             self.dispatch = dispatch
         }
+    }
+
+    convenience init(dispatcher: Dispatcher, middleware: (any Middleware<State>)? = nil, subject: BindingValueSubject<State>) {
+        let dispatch: Dispatch<State> = { mutation in
+            subject.send { state in
+                mutation.mutate(state: &state)
+            }
+        }
+
+        self.init(dispatch: dispatch, dispatcher: dispatcher, middleware: middleware, subject: subject)
     }
 
     ///
@@ -38,7 +47,17 @@ public final class Store<State>: Publisher, StateContainer {
 
     ///
     public func scope<T>(middleware: (any Middleware<T>)? = nil, state keyPath: WritableKeyPath<State, T>) -> Store<T> {
-        .init(dispatcher: dispatcher, middleware: middleware, subject: subject.scope(value: keyPath))
+        let dispatch: Dispatch<T> = { [unowned self] mutation in
+            self.dispatch(Mutations.Scope(mutation: mutation, state: keyPath))
+        }
+
+        return .init(
+            dispatch: dispatch,
+            dispatcher: dispatcher,
+            middleware: middleware,
+            // TODO: evaluate if a binding subject is still needed in this case?
+            subject: subject.scope(value: keyPath)
+        )
     }
 }
 
