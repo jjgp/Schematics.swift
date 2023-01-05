@@ -71,6 +71,7 @@ public extension Store {
 public extension Store {
     ///
     var state: State {
+        // It seems that this is the major reason a binding value subject is needed
         subject.wrappedValue
     }
 
