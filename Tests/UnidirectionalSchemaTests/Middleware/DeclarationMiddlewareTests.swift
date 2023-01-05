@@ -4,7 +4,9 @@ import XCTest
 final class DeclarationMiddlewareTests: XCTestCase {
     func testDeclarationMiddlewareInCountStore() {
         @DeclarationBuilder var declarations: some Declaration<Count> {
-            Take(Count.Add.self)
+            Take(Count.Add.self) { mutation in
+                Put(Count.Decrement(mutation.value))
+            }
             Put(Count.Add(10))
             Select { state in
                 Put(Count.Add(state.count + 10))
@@ -36,4 +38,8 @@ public struct Select<State>: Declaration {
 
 public struct Take<State>: Declaration {
     public init<M: Mutation>(_: M.Type) where M.State == State {}
+
+    public init<M: Mutation>(_: M.Type, @DeclarationBuilder _: (M) -> some Declaration<State>) where M.State == State {}
 }
+
+// TODO: to support Call the declaration protocol should have a stateless and stateful counterpart
