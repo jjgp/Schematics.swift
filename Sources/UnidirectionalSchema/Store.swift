@@ -46,8 +46,11 @@ public final class Store<State>: Publisher, StateContainer {
     }
 
     ///
-    public func scope<T>(middleware: (any Middleware<T>)? = nil, state keyPath: WritableKeyPath<State, T>) -> Store<T> {
-        let dispatch: Dispatch<T> = { [unowned self] mutation in
+    public func scope<Substate>(
+        middleware: (any Middleware<Substate>)? = nil,
+        state keyPath: WritableKeyPath<State, Substate>
+    ) -> Store<Substate> {
+        let dispatch: Dispatch<Substate> = { [unowned self] mutation in
             self.dispatch(Mutations.Scope(mutation: mutation, state: keyPath))
         }
 

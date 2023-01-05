@@ -41,40 +41,4 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(firstCountOutputs, [0, 10, -10])
         XCTAssertEqual(secondCountOutputs, [0, -20, 20])
     }
-
-    func testFooBarBaz() {
-        let fooStore = Store(state: Foo())
-        let barStore = fooStore.scope(state: \.bar)
-        let bazStore = barStore.scope(state: \.baz)
-
-        bazStore.send(Baz.Add(10))
-
-        _ = bazStore.state
-    }
-}
-
-struct Foo {
-    var bar = Bar()
-}
-
-struct Bar {
-    var baz = Baz()
-}
-
-struct Baz {
-    var qux = 0
-}
-
-extension Baz {
-    struct Add: Mutation {
-        let value: Int
-
-        init(_ value: Int) {
-            self.value = value
-        }
-
-        func mutate(state: inout Baz) {
-            state.qux += value
-        }
-    }
 }

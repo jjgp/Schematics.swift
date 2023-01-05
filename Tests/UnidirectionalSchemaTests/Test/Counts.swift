@@ -106,14 +106,12 @@ extension Counts {
         ) -> any Publisher<any Mutation<Counts>, Never> {
             mutationPublisher
                 .compactMap { $0 as? Mutations.Scope<Counts, Count> }
-                .compactMap {
-                    // TODO: would be nice to extract the leaf mutation
-                    guard let add = $0.mutation as? Count.Add else {
+                .compactMap { scope in
+                    guard let add = scope.mutation as? Count.Add else {
                         return nil
                     }
 
-                    // TODO: would be nice to extract the "to leaf" keyPath
-                    return (add.value, $0.keyPath)
+                    return (add.value, scope.keyPath)
                 }
                 .map(Self.init(_:to:))
         }
