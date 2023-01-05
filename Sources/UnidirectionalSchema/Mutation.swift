@@ -10,6 +10,7 @@ public protocol Mutation<State> {
 ///
 public enum Mutations {
     // TODO: some way to unscope/flatten the action
+    // Need to think more on the telescoping/flattening of the Scope action
 
     ///
     public struct Scope<State, T>: Mutation {
