@@ -42,8 +42,6 @@ extension Count {
                 .compactMap { $0 as? Count.Add }
                 .map { Self($0.value) }
         }
-
-        typealias State = Count
     }
 
     struct Multiply: Thunk {
@@ -57,8 +55,6 @@ extension Count {
             let count = container.state.count
             container.send(Add(multiplier * count - count))
         }
-
-        typealias State = Count
     }
 }
 
@@ -115,7 +111,5 @@ extension Counts {
                 }
                 .map(Self.init(_:to:))
         }
-
-        typealias State = Counts
     }
 }
