@@ -3,7 +3,7 @@ import XCTest
 
 final class DeclarationMiddlewareTests: XCTestCase {
     func testDeclarationMiddlewareInCountStore() {
-        @DeclarationBuilder var declarations: any Declaration<Count> {
+        @DeclarationBuilder var declarations: some Declaration<Count> {
             Take(Count.Add.self)
             Put(Count.Add(10))
             Select { state in
@@ -19,10 +19,12 @@ public protocol Declaration<State> {
 
 @resultBuilder
 public enum DeclarationBuilder {
-    static func buildBlock<State>(_: any Declaration<State>...) -> any Declaration<State> {
-        fatalError()
+    static func buildBlock<State>(_: any Declaration<State>...) -> Block<State> {
+        .init()
     }
 }
+
+public struct Block<State>: Declaration {}
 
 public struct Put<State>: Declaration {
     public init(_: any Mutation<State>) {}
