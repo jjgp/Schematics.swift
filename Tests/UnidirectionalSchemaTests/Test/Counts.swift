@@ -39,7 +39,7 @@ extension Count {
             mutationPublisher: AnyPublisher<any Mutation<Count>, Never>
         ) -> any Publisher<any Mutation<Count>, Never> {
             mutationPublisher
-                .compactMap { $0 as? Count.Add }
+                .ofType(Count.Add.self)
                 .map { Self($0.value) }
         }
     }
@@ -101,7 +101,7 @@ extension Counts {
             mutationPublisher: AnyPublisher<any Mutation<Counts>, Never>
         ) -> any Publisher<any Mutation<Counts>, Never> {
             mutationPublisher
-                .compactMap { $0 as? Mutations.Scope<Counts, Count> }
+                .ofType(Mutations.Scope<Counts, Count>.self)
                 .compactMap { scope in
                     guard let add = scope.mutation as? Count.Add else {
                         return nil

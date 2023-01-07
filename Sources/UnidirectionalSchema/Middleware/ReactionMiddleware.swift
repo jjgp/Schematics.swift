@@ -83,3 +83,11 @@ public class ReactionMiddleware<State>: Middleware {
         mutationPublisher.send(mutation)
     }
 }
+
+public extension Publisher {
+    func ofType<M: Mutation>(_: M.Type) -> Publishers.CompactMap<Self, M> where Output == any Mutation<M.State> {
+        compactMap {
+            $0 as? M
+        }
+    }
+}
