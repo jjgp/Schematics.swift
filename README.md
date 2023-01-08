@@ -2,6 +2,8 @@
 
 ## FoundationSchema
 
+## CombineSchema
+
 ## ReactiveSchema
 
 ## UnidirectionalSchema
