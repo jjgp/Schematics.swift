@@ -9,15 +9,15 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
-        .library(name: "CoreSchema", targets: ["CoreSchema"]),
+        .library(name: "FoundationSchema", targets: ["FoundationSchema"]),
         .library(name: "ReactiveSchema", targets: ["ReactiveSchema"]),
         .library(name: "UnidirectionalSchema", targets: ["UnidirectionalSchema"])
     ],
     dependencies: [],
     targets: [
-        .target(name: "CoreSchema", dependencies: []),
-        .testTarget(name: "CoreSchemaTests", dependencies: ["CoreSchema"]),
-        .target(name: "ReactiveSchema", dependencies: ["CoreSchema"]),
+        .target(name: "FoundationSchema", dependencies: []),
+        .testTarget(name: "FoundationSchemaTests", dependencies: ["FoundationSchema"]),
+        .target(name: "ReactiveSchema", dependencies: ["FoundationSchema"]),
         .testTarget(name: "ReactiveSchemaTests", dependencies: ["ReactiveSchema"]),
         .target(name: "UnidirectionalSchema", dependencies: ["ReactiveSchema"]),
         .testTarget(name: "UnidirectionalSchemaTests", dependencies: ["UnidirectionalSchema"])

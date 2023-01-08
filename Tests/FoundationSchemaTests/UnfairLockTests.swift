@@ -1,4 +1,4 @@
-import CoreSchema
+import FoundationSchema
 import XCTest
 
 class UnfairLockTests: XCTestCase {

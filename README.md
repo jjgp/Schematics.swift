@@ -1,6 +1,6 @@
 # Schematics.swift
 
-## CoreSchema
+## FoundationSchema
 
 ## ReactiveSchema
 

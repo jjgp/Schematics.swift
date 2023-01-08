@@ -1,5 +1,5 @@
-import CoreSchema
 import Foundation
+import FoundationSchema
 
 ///
 public class CurrentValueSubject<Value>: Subject {
