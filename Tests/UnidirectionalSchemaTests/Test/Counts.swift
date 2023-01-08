@@ -36,11 +36,13 @@ extension Count {
         }
 
         func run(
-            mutationPublisher: AnyPublisher<any Mutation<Count>, Never>
+            mutationPublisher: some Publisher<any Mutation<Count>, Never>
         ) -> any Publisher<any Mutation<Count>, Never> {
             mutationPublisher
                 .ofType(Count.Add.self)
-                .map { Self($0.value) }
+                .map {
+                    Self($0.value)
+                }
         }
     }
 
@@ -98,7 +100,7 @@ extension Counts {
         }
 
         func run(
-            mutationPublisher: AnyPublisher<any Mutation<Counts>, Never>
+            mutationPublisher: some Publisher<any Mutation<Counts>, Never>
         ) -> any Publisher<any Mutation<Counts>, Never> {
             mutationPublisher
                 .ofType(Mutations.Scope<Counts, Count>.self)
