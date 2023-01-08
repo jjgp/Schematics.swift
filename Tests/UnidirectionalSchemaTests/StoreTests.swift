@@ -4,23 +4,29 @@ import UnidirectionalSchema
 import XCTest
 
 final class StoreTests: XCTestCase {
-    func testActionsOnCountStore() {
+    func testOutputStateAfterMutationsSentThroughStore() {
+        // Given a store of Count
         let store = Store(state: Count())
         let spy = PublisherSpy(store)
 
+        // When mutations of Count are sent
         store.send(Count.Add(10))
         store.send(Count.Add(-20))
 
+        // Then the Count state should reflect those mutations
         let outputs = spy.outputs.map(\.count)
 
         XCTAssertEqual(outputs, [0, 10, -10])
     }
 
-    func testMultipleStoresInScope() {
+    func testOutputStateAfterMutationsSentThroughRelatedStores() {
+        // Given a store Counts and multiple stores of its substates
         let countsStore = Store(state: Counts())
         let countsSpy = PublisherSpy(countsStore)
 
         let countsArrayStore = countsStore.scope(state: \.counts)
+        let countsArraySpy = PublisherSpy(countsArrayStore)
+        // Need to push Count states into first and second indices
         countsArrayStore.send(Counts.Push())
         countsArrayStore.send(Counts.Push())
 
@@ -30,21 +36,19 @@ final class StoreTests: XCTestCase {
         let secondCountStore = countsStore.scope(state: \.counts[1])
         let secondCountSpy = PublisherSpy(secondCountStore.removeDuplicates())
 
+        // When mutations are sent to any of the stores
         firstCountStore.send(Count.Add(10))
         countsArrayStore.send(Counts.Add(-20, to: \.[0]))
         secondCountStore.send(Count.Add(-20))
         countsArrayStore.send(Counts.Add(40, to: \.[1]))
 
+        // Then the state of each store should be consistent
         let countsOutputs = countsSpy.outputs.map { output in
-            guard let first = output.counts.first else {
-                return [Int]()
-            }
+            output.counts.map(\.count)
+        }
 
-            guard output.counts.count > 1 else {
-                return [first.count]
-            }
-
-            return [first.count, output.counts[1].count]
+        let countsArrayOutputs = countsArraySpy.outputs.map { output in
+            output.map(\.count)
         }
 
         let firstCountOutputs = firstCountSpy.outputs.map(\.count)
@@ -59,6 +63,7 @@ final class StoreTests: XCTestCase {
             [-10, -20],
             [-10, 20],
         ])
+        XCTAssertEqual(countsArrayOutputs, countsOutputs)
         XCTAssertEqual(firstCountOutputs, [0, 10, -10])
         XCTAssertEqual(secondCountOutputs, [0, -20, 20])
     }
