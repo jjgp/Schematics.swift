@@ -7,29 +7,29 @@ public protocol Reaction<State> {
 
     ///
     func run(
-        mutationPublisher: AnyPublisher<any Mutation<State>, Never>,
-        statePublisher: AnyPublisher<State, Never>
+        mutationPublisher: some Publisher<any Mutation<State>, Never>,
+        statePublisher: some Publisher<State, Never>
     ) -> any Publisher<any Mutation<State>, Never>
 
     ///
-    func run(mutationPublisher: AnyPublisher<any Mutation<State>, Never>) -> any Publisher<any Mutation<State>, Never>
+    func run(mutationPublisher: some Publisher<any Mutation<State>, Never>) -> any Publisher<any Mutation<State>, Never>
 }
 
 ///
 public extension Reaction {
     ///
     func run(
-        mutationPublisher: AnyPublisher<any Mutation<State>, Never>,
-        statePublisher _: AnyPublisher<State, Never>
+        mutationPublisher: some Publisher<any Mutation<State>, Never>,
+        statePublisher _: some Publisher<State, Never>
     ) -> any Publisher<any Mutation<State>, Never> {
         run(mutationPublisher: mutationPublisher)
     }
 
     ///
     func run(
-        mutationPublisher _: AnyPublisher<any Mutation<State>, Never>
+        mutationPublisher _: some Publisher<any Mutation<State>, Never>
     ) -> any Publisher<any Mutation<State>, Never> {
-        fatalError("Must implement run(mutationPublisher:)")
+        fatalError("Must implement run(mutationPublisher:) in conforming type")
     }
 }
 
@@ -53,8 +53,8 @@ public class ReactionMiddleware<State>: Middleware {
     public init(reactions: [any Reaction<State>]) {
         runPublisher = Publishers.MergeMany(reactions.map { reaction in
             reaction.run(
-                mutationPublisher: mutationPublisher.eraseToAnyPublisher(),
-                statePublisher: statePublisher.eraseToAnyPublisher()
+                mutationPublisher: mutationPublisher,
+                statePublisher: statePublisher
             ).eraseToAnyPublisher()
         })
     }
@@ -81,5 +81,25 @@ public class ReactionMiddleware<State>: Middleware {
         next(mutation)
         statePublisher.send(container.state)
         mutationPublisher.send(mutation)
+    }
+}
+
+public extension Publisher {
+    func ofScope<State, Substate>(
+        state keyPath: WritableKeyPath<State, Substate>
+    ) -> Publishers.CompactMap<Self, any Mutation<Substate>> where Output == any Mutation<State> {
+        compactMap { mutation in
+            guard let scope = mutation as? Mutations.Scope<State, Substate>, scope.keyPath == keyPath else {
+                return nil
+            }
+
+            return scope.mutation
+        }
+    }
+
+    func ofType<M: Mutation>(_: M.Type) -> Publishers.CompactMap<Self, M> where Output == any Mutation<M.State> {
+        compactMap {
+            $0 as? M
+        }
     }
 }
