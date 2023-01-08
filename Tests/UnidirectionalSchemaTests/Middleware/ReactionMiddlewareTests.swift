@@ -3,7 +3,7 @@ import UnidirectionalSchema
 import XCTest
 
 final class ReactionMiddlewareTests: XCTestCase {
-    func testOutputStateAfterMutationsSentThroughStoreWithAReaction() {
+    func testOutputStateAfterMutationsSentThroughStoreWithReaction() {
         // Given a store of Count with reaction middleware
         let store = Store(middleware: ReactionMiddleware(reaction: Count.Decrement()), state: Count())
         let spy = PublisherSpy(store)
