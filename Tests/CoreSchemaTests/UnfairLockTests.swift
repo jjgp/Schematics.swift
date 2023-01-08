@@ -8,14 +8,14 @@ class UnfairLockTests: XCTestCase {
         expectation.expectedFulfillmentCount = 2
         let iterations = 1000
 
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
             for _ in 0 ..< iterations {
                 counter.increment()
             }
             expectation.fulfill()
         }
 
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .default).async {
             for _ in 0 ..< iterations {
                 counter.increment()
             }
