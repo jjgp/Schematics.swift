@@ -26,7 +26,7 @@ final class StoreTests: XCTestCase {
 
         let countsArrayStore = countsStore.scope(state: \.counts)
         let countsArraySpy = PublisherSpy(countsArrayStore)
-        // Need to push Count states into first and second indices
+        // Need to push Count states into first and second indices for following stores
         countsArrayStore.send(Counts.Push())
         countsArrayStore.send(Counts.Push())
 
