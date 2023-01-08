@@ -1,6 +1,6 @@
 import Combine
-import CoreSchema
 import Foundation
+import FoundationSchema
 
 ///
 public struct BridgedPublisher<Output>: Combine.Publisher {
