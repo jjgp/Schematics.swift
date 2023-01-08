@@ -17,7 +17,7 @@ final class ReactionMiddlewareTests: XCTestCase {
         XCTAssertEqual(outputs, [0, 10, 0])
     }
 
-    func testOutputStateAfterMutationsSentThroughStoreWithMultipleReactions() {
+    func testOutputStateAfterMutationsSentThroughStoreWithReactions() {
         // Given a store of Count with reaction middleware
         let store = Store(
             middleware: ReactionMiddleware(reactions: Count.Decrement(), Count.Decrement()),
