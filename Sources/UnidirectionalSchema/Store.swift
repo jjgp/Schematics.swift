@@ -102,7 +102,7 @@ public extension Mutations {
         ///
         public let mutation: any Mutation<Substate>
 
-        init(mutation: any Mutation<Substate>, state keyPath: WritableKeyPath<State, Substate>) {
+        public init(mutation: any Mutation<Substate>, state keyPath: WritableKeyPath<State, Substate>) {
             self.keyPath = keyPath
             self.mutation = mutation
         }

@@ -10,6 +10,7 @@ final class ReactionMiddlewareTests: XCTestCase {
         store.send(Count.Add(10))
 
         let outputs = spy.outputs.map(\.count)
+
         XCTAssertEqual(outputs, [0, 10, 0])
     }
 
@@ -23,26 +24,50 @@ final class ReactionMiddlewareTests: XCTestCase {
         store.send(Count.Add(10))
 
         let outputs = spy.outputs.map(\.count)
+
         XCTAssertEqual(outputs, [0, 10, 0, -10])
     }
 
     func testReactionMiddlewareWithMultipleStoresInScope() {
-        let countsStore = Store(middleware: ReactionMiddleware(reactions: Counts.Decrement()), state: Counts())
+        let countsStore = Store(
+            middleware: ReactionMiddleware(reactions: Counts.DecrementCounts()),
+            state: Counts()
+        )
         let countsSpy = PublisherSpy(countsStore)
-        let firstCountStore = countsStore.scope(state: \.first)
+
+        let countsArrayStore = countsStore.scope(state: \.counts)
+        countsArrayStore.send(Counts.Push())
+        countsArrayStore.send(Counts.Push())
+
+        let firstCountStore = countsArrayStore.scope(state: \.[0])
         let firstCountSpy = PublisherSpy(firstCountStore.removeDuplicates())
-        let secondCountStore = countsStore.scope(state: \.second)
+
+        let secondCountStore = countsArrayStore.scope(state: \.[1])
         let secondCountSpy = PublisherSpy(secondCountStore.removeDuplicates())
 
         firstCountStore.send(Count.Add(10))
-        countsStore.send(Counts.Add(-20, to: \.first))
+        countsArrayStore.send(Counts.Add(-20, to: \.[0]))
         secondCountStore.send(Count.Add(-20))
-        countsStore.send(Counts.Add(40, to: \.second))
+        countsArrayStore.send(Counts.Add(40, to: \.[1]))
 
-        let countsOutputs = countsSpy.outputs.map { [$0.first.count, $0.second.count] }
+        let countsOutputs = countsSpy.outputs.map { output in
+            guard let first = output.counts.first else {
+                return [Int]()
+            }
+
+            guard output.counts.count > 1 else {
+                return [first.count]
+            }
+
+            return [first.count, output.counts[1].count]
+        }
+
         let firstCountOutputs = firstCountSpy.outputs.map(\.count)
         let secondCountOutputs = secondCountSpy.outputs.map(\.count)
+
         XCTAssertEqual(countsOutputs, [
+            [],
+            [0],
             [0, 0],
             [10, 0],
             [0, 0],

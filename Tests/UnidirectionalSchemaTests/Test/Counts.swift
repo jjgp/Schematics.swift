@@ -7,7 +7,13 @@ struct Count: Equatable {
     var count = 0
 }
 
-// MARK: - Count Mutations
+// MARK: - Counts
+
+struct Counts: Equatable {
+    var counts: [Count] = []
+}
+
+// MARK: - Mutations
 
 extension Count {
     struct Add: Mutation {
@@ -60,50 +66,52 @@ extension Count {
     }
 }
 
-// MARK: - Counts
-
-struct Counts: Equatable {
-    var first: Count = .init()
-    var second: Count = .init()
-}
-
-// MARK: - Counts Mutations
-
 extension Counts {
     struct Add: Mutation {
-        let keyPath: WritableKeyPath<Counts, Count>
+        let keyPath: WritableKeyPath<[Count], Count>
         let value: Int
 
-        init(_ value: Int, to keyPath: WritableKeyPath<Counts, Count>) {
+        init(_ value: Int, to keyPath: WritableKeyPath<[Count], Count>) {
             self.keyPath = keyPath
             self.value = value
         }
 
-        func mutate(state: inout Counts) {
+        func mutate(state: inout [Count]) {
             state[keyPath: keyPath].count += value
         }
     }
 
-    struct Decrement: Mutation, Reaction {
-        let keyPath: WritableKeyPath<Counts, Count>?
-        let value: Int?
+    struct Decrement: Mutation {
+        let keyPath: WritableKeyPath<[Count], Count>
+        let value: Int
 
-        init(_ value: Int? = nil, to keyPath: WritableKeyPath<Counts, Count>? = nil) {
+        init(_ value: Int, to keyPath: WritableKeyPath<[Count], Count>) {
             self.keyPath = keyPath
             self.value = value
         }
 
-        func mutate(state: inout Counts) {
-            if let keyPath, let value {
-                state[keyPath: keyPath].count -= value
-            }
+        func mutate(state: inout [Count]) {
+            state[keyPath: keyPath].count -= value
         }
+    }
 
+    struct Push: Mutation {
+        func mutate(state: inout [Count]) {
+            state.append(.init())
+        }
+    }
+}
+
+// MARK: - Reactions
+
+extension Counts {
+    struct DecrementCounts: Reaction {
         func run(
             mutationPublisher: some Publisher<any Mutation<Counts>, Never>
         ) -> any Publisher<any Mutation<Counts>, Never> {
             mutationPublisher
-                .ofType(Mutations.Scope<Counts, Count>.self)
+                .ofScope(state: \.counts)
+                .ofType(Mutations.Scope<[Count], Count>.self)
                 .compactMap { scope in
                     guard let add = scope.mutation as? Count.Add else {
                         return nil
@@ -111,7 +119,10 @@ extension Counts {
 
                     return (add.value, scope.keyPath)
                 }
-                .map(Self.init(_:to:))
+                .map(Counts.Decrement.init(_:to:))
+                .map {
+                    Mutations.Scope(mutation: $0, state: \.counts)
+                }
         }
     }
 }
