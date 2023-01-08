@@ -4,7 +4,7 @@ import XCTest
 
 final class ReactionMiddlewareTests: XCTestCase {
     func testOutputStateAfterMutationsSentThroughStoreWithAReaction() {
-        // Given a store of Count
+        // Given a store of Count with reaction middleware
         let store = Store(middleware: ReactionMiddleware(reaction: Count.Decrement()), state: Count())
         let spy = PublisherSpy(store)
 
@@ -18,7 +18,7 @@ final class ReactionMiddlewareTests: XCTestCase {
     }
 
     func testOutputStateAfterMutationsSentThroughStoreWithMultipleReactions() {
-        // Given a store of Count
+        // Given a store of Count with reaction middleware
         let store = Store(
             middleware: ReactionMiddleware(reactions: Count.Decrement(), Count.Decrement()),
             state: Count()
@@ -35,7 +35,7 @@ final class ReactionMiddlewareTests: XCTestCase {
     }
 
     func testOutputStateAfterMutationsSentThroughRelatedStoreWithMultipleReactions() {
-        // Given a store Counts and multiple stores of its substates
+        // Given a store of Counts with reaction middleware and multiple stores of its substates
         let countsStore = Store(
             middleware: ReactionMiddleware(reactions: Counts.DecrementCounts()),
             state: Counts()

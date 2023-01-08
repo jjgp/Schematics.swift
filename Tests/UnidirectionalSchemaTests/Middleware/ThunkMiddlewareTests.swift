@@ -3,7 +3,8 @@ import UnidirectionalSchema
 import XCTest
 
 final class ThunkMiddlewareTests: XCTestCase {
-    func testThunkMiddlewareInCountStore() {
+    func testOutputStateAfterThunksSentThroughStore() {
+        // Given a store of Count with thunk middleware
         let store = Store(
             middleware: ThunkMiddleware(),
             state: Count()
