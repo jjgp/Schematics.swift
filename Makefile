@@ -2,6 +2,7 @@
 bootstrap:
 	@$(MAKE) brew
 	@$(MAKE) install_tuist
+	@$(MAKE) pre-commit-install
 
 .PHONY: brew
 brew:
@@ -16,3 +17,8 @@ install_tuist:
 .PHONY: open
 open:
 	@open Schematics.xcworkspace
+
+.PHONY: pre-commit-install
+pre-commit-install:
+	@pre-commit install
+	@pre-commit install -t post-checkout
