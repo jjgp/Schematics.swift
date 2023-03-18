@@ -22,3 +22,7 @@ open:
 pre-commit-install:
 	@pre-commit install
 	@pre-commit install -t post-checkout
+
+.PHONY: tuist_generate
+tuist_generate:
+	@tuist generate --no-open --path Examples/Reddit

@@ -17,10 +17,10 @@ repos:
       - id: swiftlint
   - repo: local
     hooks:
-      - id: scripts-post-checkout
+      - id: tuist-generate
         always_run: true
-        entry: ./scripts/post-checkout.sh
-        language: script
-        name: scripts-post-checkout
+        entry: make tuist_generate
+        language: system
+        name: tuist-generate
         pass_filenames: false
         stages: [post-checkout]
