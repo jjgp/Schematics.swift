@@ -14,3 +14,12 @@ repos:
     rev: 0.47.1
     hooks:
       - id: swiftlint
+  - repo: local
+    hooks:
+      - id: scripts-post-checkout
+        always_run: true
+        entry: ./scripts/post-checkout.sh
+        language: script
+        name: scripts-post-checkout
+        pass_filenames: false
+        stages: [post-checkout]
