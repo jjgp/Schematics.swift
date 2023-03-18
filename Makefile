@@ -3,6 +3,7 @@ bootstrap:
 	@$(MAKE) brew
 	@$(MAKE) install_tuist
 	@$(MAKE) pre-commit-install
+	@$(MAKE) tuist_generate
 
 .PHONY: brew
 brew:
