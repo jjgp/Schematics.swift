@@ -2,6 +2,18 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:Brewfile">
+   </FileRef>
+   <FileRef
+      location = "group:Makefile">
+   </FileRef>
+   <FileRef
+      location = "group:README.md">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/Reddit/Reddit.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:">
    </FileRef>
 </Workspace>
