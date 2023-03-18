@@ -1,5 +1,5 @@
 #!/bin/sh
 
 pushd Examples/Reddit
-tuist generate
+tuist generate --no-open
 popd
