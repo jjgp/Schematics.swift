@@ -26,4 +26,6 @@ let localHelper = LocalHelper(name: "MyPlugin")
 // Creates our project using a helper function defined in ProjectDescriptionHelpers
 let project = Project.app(name: "Reddit",
                           platform: .iOS,
+                          packages: [.package(path: "../../")],
+                          dependencies: [.package(product: "UnidirectionalSchema")],
                           additionalTargets: ["RedditKit", "RedditUI"])
