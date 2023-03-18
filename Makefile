@@ -12,3 +12,7 @@ install_tuist:
 	@if ! command -v tuist &> /dev/null; then \
     	curl -Ls https://install.tuist.io | bash; \
 	fi
+
+.PHONY: open
+open:
+	@open Schematics.xcworkspace
