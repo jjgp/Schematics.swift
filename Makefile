@@ -25,7 +25,7 @@ pre-commit-install:
 	@pre-commit install -t post-checkout
 
 .PHONY: test
-test: PLATFORM ?= "iOS Simulator,OS=16.2,name=iPhone 14"
+test: PLATFORM ?= iOS Simulator,OS=16.2,name=iPhone 14
 test: TEST_TARGETS ?= FoundationSchema GitHub ReactiveSchema UnidirectionalSchema
 test:
 	@for target in $(TEST_TARGETS);  do \
