@@ -1,11 +1,11 @@
-import RedditUI
 import SwiftUI
 
 @main
-struct RedditApp: App {
+struct GitHubApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Text("Hello, World!")
+                .padding()
         }
     }
 }
