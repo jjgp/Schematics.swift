@@ -29,7 +29,7 @@ test: PLATFORM ?= "iOS Simulator,OS=16.2,name=iPhone 14"
 test: TEST_TARGETS ?= FoundationSchema GitHub ReactiveSchema UnidirectionalSchema
 test:
 	@for target in $(TEST_TARGETS);  do \
-		xcodebuild test -workspace Schematics.xcworkspace -scheme $$target -destination platform=$(PLATFORM); \
+		xcodebuild test -workspace Schematics.xcworkspace -scheme $$target -destination platform="$(PLATFORM)"; \
 	done
 
 .PHONY: tuist_generate
