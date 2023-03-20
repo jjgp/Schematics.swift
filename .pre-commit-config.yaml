@@ -1,3 +1,4 @@
+default_stages: [commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
@@ -14,3 +15,12 @@ repos:
     rev: 0.47.1
     hooks:
       - id: swiftlint
+  - repo: local
+    hooks:
+      - id: tuist-generate
+        always_run: true
+        entry: make tuist_generate
+        language: system
+        name: tuist-generate
+        pass_filenames: false
+        stages: [post-checkout]
