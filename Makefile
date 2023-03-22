@@ -1,3 +1,5 @@
+include Examples/GitHub/GitHub.mk
+
 .PHONY: bootstrap
 bootstrap:
 	@$(MAKE) brew

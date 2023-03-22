@@ -4,11 +4,15 @@
    <FileRef
       location = "group:Brewfile">
    </FileRef>
+   <Group
+      location = "group:Examples"
+      name = "Examples">
+      <FileRef
+         location = "group:GitHub/GitHub.xcodeproj">
+      </FileRef>
+   </Group>
    <FileRef
       location = "group:Makefile">
-   </FileRef>
-   <FileRef
-      location = "group:Examples/GitHub/GitHub.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:README.md">
