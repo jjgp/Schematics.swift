@@ -27,8 +27,8 @@ final class StoreTests: XCTestCase {
         let countsArrayStore = countsStore.scope(state: \.counts)
         let countsArraySpy = PublisherSpy(countsArrayStore)
         // Need to push Count states into first and second indices for following stores
-        countsArrayStore.send(Counts.Push())
-        countsArrayStore.send(Counts.Push())
+        countsArrayStore.send([Count].Push())
+        countsArrayStore.send([Count].Push())
 
         let firstCountStore = countsStore.scope(state: \.counts[0])
         let firstCountSpy = PublisherSpy(firstCountStore.removeDuplicates())
@@ -38,9 +38,9 @@ final class StoreTests: XCTestCase {
 
         // When mutations are sent to any of the stores
         firstCountStore.send(Count.Add(10))
-        countsArrayStore.send(Counts.Add(-20, to: \.[0]))
+        countsArrayStore.send([Count].Add(-20, to: \.[0]))
         secondCountStore.send(Count.Add(-20))
-        countsArrayStore.send(Counts.Add(40, to: \.[1]))
+        countsArrayStore.send([Count].Add(40, to: \.[1]))
 
         // Then the state of each store should be consistent
         let countsOutputs = countsSpy.outputs.map { output in

@@ -66,7 +66,7 @@ extension Count {
     }
 }
 
-extension Counts {
+extension [Count] {
     struct Add: Mutation {
         let keyPath: WritableKeyPath<[Count], Count>
         let value: Int
@@ -117,12 +117,9 @@ extension Counts {
                         return nil
                     }
 
-                    return (add.value, scope.keyPath)
+                    return [Count].Decrement(add.value, to: scope.keyPath)
                 }
-                .map(Counts.Decrement.init(_:to:))
-                .map {
-                    Mutations.Scope(mutation: $0, state: \.counts)
-                }
+                .scope(state: \.counts)
         }
     }
 }
