@@ -66,7 +66,7 @@ extension Count {
     }
 }
 
-extension Counts {
+extension [Count] {
     struct Add: Mutation {
         let keyPath: WritableKeyPath<[Count], Count>
         let value: Int
@@ -112,17 +112,11 @@ extension Counts {
             mutationPublisher
                 .ofScope(state: \.counts)
                 .ofType(Mutations.Scope<[Count], Count>.self)
-                .compactMap { scope in
-                    guard let add = scope.mutation as? Count.Add else {
-                        return nil
-                    }
-
-                    return (add.value, scope.keyPath)
+                .mutationOfType(Count.Add.self)
+                .map { mutation, keyPath in
+                    [Count].Decrement(mutation.value, to: keyPath)
                 }
-                .map(Counts.Decrement.init(_:to:))
-                .map {
-                    Mutations.Scope(mutation: $0, state: \.counts)
-                }
+                .scope(state: \.counts)
         }
     }
 }
