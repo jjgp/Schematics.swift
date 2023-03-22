@@ -86,19 +86,6 @@ public class ReactionMiddleware<State>: Middleware {
 
 public extension Publisher {
     ///
-    func mutationOfType<State, M: Mutation>(
-        _: M.Type
-    ) -> Publishers.CompactMap<Self, (M, WritableKeyPath<State, M.State>)> where Output == Mutations.Scope<State, M.State> {
-        compactMap {
-            guard let mutation = $0.mutation as? M else {
-                return nil
-            }
-
-            return (mutation, $0.keyPath)
-        }
-    }
-
-    ///
     func ofScope<State, Substate>(
         state keyPath: WritableKeyPath<State, Substate>
     ) -> Publishers.CompactMap<Self, any Mutation<Substate>> where Output == any Mutation<State> {

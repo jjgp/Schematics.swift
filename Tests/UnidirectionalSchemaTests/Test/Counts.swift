@@ -112,9 +112,12 @@ extension Counts {
             mutationPublisher
                 .ofScope(state: \.counts)
                 .ofType(Mutations.Scope<[Count], Count>.self)
-                .mutationOfType(Count.Add.self)
-                .map { mutation, keyPath in
-                    [Count].Decrement(mutation.value, to: keyPath)
+                .compactMap { scope in
+                    guard let add = scope.mutation as? Count.Add else {
+                        return nil
+                    }
+
+                    return [Count].Decrement(add.value, to: scope.keyPath)
                 }
                 .scope(state: \.counts)
         }
