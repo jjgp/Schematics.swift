@@ -37,7 +37,7 @@ public extension Reaction {
 public class ReactionMiddleware<State>: Middleware {
     private var container: (any StateContainer<State>)!
     private let mutationPublisher = PassthroughSubject<any Mutation<State>, Never>()
-    private var runPublisher: (any Publisher<any Mutation<State>, Never>)!
+    private var runPublisher: any Publisher<any Mutation<State>, Never>
     private let statePublisher = PassthroughSubject<State, Never>()
     private var subscription: AnyCancellable?
 
@@ -51,6 +51,8 @@ public class ReactionMiddleware<State>: Middleware {
 
     ///
     public init(reactions: [any Reaction<State>]) {
+        let mutationPublisher = mutationPublisher
+        let statePublisher = statePublisher
         runPublisher = Publishers.MergeMany(reactions.map { reaction in
             reaction.run(
                 mutationPublisher: mutationPublisher,
