@@ -7,7 +7,7 @@ public final class Store<State>: Publisher, StateContainer {
     private var subject: BindingValueSubject<State>
 
     init(
-        dispatch: Dispatch<State>!,
+        dispatch: @escaping Dispatch<State>,
         dispatcher: Dispatcher,
         middleware: (any Middleware<State>)? = nil,
         subject: BindingValueSubject<State>
