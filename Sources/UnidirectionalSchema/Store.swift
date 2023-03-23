@@ -16,11 +16,11 @@ public final class Store<State>: Publisher, StateContainer {
         self.subject = subject
 
         if let middleware = middleware {
-            middleware.attachTo(eraseToAnyStateContainer())
-
             self.dispatch = { mutation in
                 middleware.respond(to: mutation, forwardingTo: dispatch)
             }
+
+            middleware.attachTo(eraseToAnyStateContainer())
         } else {
             self.dispatch = dispatch
         }
