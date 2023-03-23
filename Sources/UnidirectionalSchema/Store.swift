@@ -2,7 +2,7 @@ import ReactiveSchema
 
 ///
 public final class Store<State>: Publisher, StateContainer {
-    private var dispatch: Dispatch<State>!
+    private var dispatch: Dispatch<State>
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
 
