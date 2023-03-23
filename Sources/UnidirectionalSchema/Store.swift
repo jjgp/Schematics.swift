@@ -20,7 +20,7 @@ public final class Store<State>: Publisher, StateContainer {
                 middleware.respond(to: mutation, forwardingTo: dispatch)
             }
 
-            middleware.attachTo(eraseToAnyStateContainer())
+            middleware.attachTo(toUnownedStateContainer())
         } else {
             self.dispatch = dispatch
         }
@@ -74,18 +74,6 @@ public extension Store {
     ///
     var state: State {
         subject.wrappedValue
-    }
-
-    ///
-    func eraseToAnyStateContainer() -> AnyStateContainer<State> {
-        AnyStateContainer(
-            getState: { [unowned self] in
-                self.state
-            },
-            send: { [unowned self] mutation in
-                self.send(mutation)
-            }
-        )
     }
 
     ///

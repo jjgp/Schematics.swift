@@ -35,7 +35,7 @@ public extension Reaction {
 
 ///
 public class ReactionMiddleware<State>: Middleware {
-    private var container: AnyStateContainer<State>!
+    private var container: (any StateContainer<State>)!
     private let mutationPublisher = PassthroughSubject<any Mutation<State>, Never>()
     private var runPublisher: (any Publisher<any Mutation<State>, Never>)!
     private let statePublisher = PassthroughSubject<State, Never>()
@@ -65,7 +65,7 @@ public class ReactionMiddleware<State>: Middleware {
     }
 
     ///
-    public func attachTo(_ container: AnyStateContainer<State>) {
+    public func attachTo(_ container: any StateContainer<State>) {
         self.container = container
 
         subscription = runPublisher.sink { mutation in

@@ -4,7 +4,7 @@ public protocol Middleware<State> {
     associatedtype State
 
     ///
-    func attachTo(_ container: AnyStateContainer<State>)
+    func attachTo(_ container: any StateContainer<State>)
 
     ///
     func respond(
@@ -15,5 +15,5 @@ public protocol Middleware<State> {
 
 public extension Middleware {
     ///
-    func attachTo(_: AnyStateContainer<State>) {}
+    func attachTo(_: any StateContainer<State>) {}
 }

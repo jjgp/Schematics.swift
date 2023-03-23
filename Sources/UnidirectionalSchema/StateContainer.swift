@@ -1,10 +1,13 @@
 ///
-public protocol StateContainer: AnyObject {
+public protocol StateContainer<State>: AnyObject {
     ///
     associatedtype State
 
     ///
     var state: State { get }
+
+    ///
+    func eraseToAnyStateContainer() -> any StateContainer<State>
 
     ///
     func send(_ mutation: any Mutation<State>)
@@ -37,11 +40,27 @@ public extension AnyStateContainer {
     func send(_ mutation: any Mutation<State>) {
         dispatch(mutation)
     }
+
+    func eraseToAnyStateContainer() -> any StateContainer<State> {
+        self
+    }
 }
 
 public extension StateContainer {
     ///
-    func eraseToAnyStateContainer() -> AnyStateContainer<State> {
-        .init(self)
+    func eraseToAnyStateContainer() -> any StateContainer<State> {
+        AnyStateContainer(self)
+    }
+
+    ///
+    func toUnownedStateContainer() -> any StateContainer<State> {
+        AnyStateContainer(
+            getState: { [unowned self] in
+                self.state
+            },
+            send: { [unowned self] mutation in
+                self.send(mutation)
+            }
+        )
     }
 }

@@ -3,18 +3,18 @@ public protocol Thunk<State> {
     associatedtype State
 
     ///
-    func run(_ container: AnyStateContainer<State>)
+    func run(_ container: any StateContainer<State>)
 }
 
 ///
 public class ThunkMiddleware<State>: Middleware {
-    private var container: AnyStateContainer<State>!
+    private var container: (any StateContainer<State>)!
 
     ///
     public init() {}
 
     ///
-    public func attachTo(_ container: AnyStateContainer<State>) {
+    public func attachTo(_ container: any StateContainer<State>) {
         self.container = container
     }
 

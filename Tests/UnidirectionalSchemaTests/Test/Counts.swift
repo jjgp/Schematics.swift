@@ -59,7 +59,7 @@ extension Count {
             self.multiplier = multiplier
         }
 
-        func run(_ container: AnyStateContainer<Count>) {
+        func run(_ container: any StateContainer<Count>) {
             let count = container.state.count
             container.send(Add(multiplier * count - count))
         }
