@@ -67,6 +67,7 @@ public class ReactionMiddleware<State>: Middleware {
 
     ///
     public func prepare(for container: any StateContainer<State>) {
+        // TODO: should rethink the semantics of this now that prepare could be potentially called from other containers
         subscription = runPublisher.sink { mutation in
             container.send(mutation)
         }
