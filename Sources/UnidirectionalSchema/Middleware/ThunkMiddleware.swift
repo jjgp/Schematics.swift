@@ -8,18 +8,15 @@ public protocol Thunk<State> {
 
 ///
 public class ThunkMiddleware<State>: Middleware {
-    private var container: (any StateContainer<State>)!
-
     ///
     public init() {}
 
     ///
-    public func attachTo(_ container: any StateContainer<State>) {
-        self.container = container
-    }
-
-    ///
-    public func respond(to mutation: any Mutation<State>, forwardingTo next: Dispatch<State>) {
+    public func respond(
+        to mutation: any Mutation<State>,
+        passedTo container: any StateContainer<State>,
+        forwardingTo next: Dispatch<State>
+    ) {
         if let thunk = (mutation as? Mutations.AnyThunk<State>)?.thunk {
             thunk.run(container)
         } else {
