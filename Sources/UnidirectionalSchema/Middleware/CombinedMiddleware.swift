@@ -13,14 +13,18 @@ public struct CombinedMiddleware<State>: Middleware {
     }
 
     ///
-    public func attachTo(_ container: any StateContainer<State>) {
+    public func prepare(for container: any StateContainer<State>) {
         middlewares.forEach {
-            $0.attachTo(container)
+            $0.prepare(for: container)
         }
     }
 
     ///
-    public func respond(to mutation: any Mutation<State>, forwardingTo next: Dispatch<State>) {
+    public func respond(
+        to mutation: any Mutation<State>,
+        passedTo container: any StateContainer<State>,
+        forwardingTo next: Dispatch<State>
+    ) {
         var current: (any Mutation<State>)! = mutation
 
         for middleware in middlewares.reversed() {
@@ -28,7 +32,7 @@ public struct CombinedMiddleware<State>: Middleware {
                 return
             }
 
-            middleware.respond(to: mutation, forwardingTo: { next in
+            middleware.respond(to: mutation, passedTo: container, forwardingTo: { next in
                 current = next
             })
         }

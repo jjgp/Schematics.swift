@@ -4,16 +4,17 @@ public protocol Middleware<State> {
     associatedtype State
 
     ///
-    func attachTo(_ container: any StateContainer<State>)
+    func prepare(for container: any StateContainer<State>)
 
     ///
     func respond(
         to mutation: any Mutation<State>,
+        passedTo container: any StateContainer<State>,
         forwardingTo next: Dispatch<State>
     )
 }
 
 public extension Middleware {
     ///
-    func attachTo(_: any StateContainer<State>) {}
+    func prepare(for _: any StateContainer<State>) {}
 }
