@@ -13,9 +13,16 @@ public struct CombinedMiddleware<State>: Middleware {
     }
 
     ///
-    public func prepare(for container: any StateContainer<State>) {
+    public func attach(to container: any StateContainer<State>) {
         middlewares.forEach {
-            $0.prepare(for: container)
+            $0.attach(to: container)
+        }
+    }
+
+    ///
+    public func detach(from container: any StateContainer<State>) {
+        middlewares.forEach {
+            $0.detach(from: container)
         }
     }
 

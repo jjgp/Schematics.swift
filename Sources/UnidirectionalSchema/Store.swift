@@ -2,9 +2,14 @@ import ReactiveSchema
 
 ///
 public final class Store<State>: Publisher, StateContainer {
+    private var detach: (() -> Void)?
     private var dispatch: Dispatch<State>!
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
+
+    deinit {
+        detach?()
+    }
 
     init(
         dispatch: @escaping Dispatch<State>,
@@ -22,7 +27,11 @@ public final class Store<State>: Publisher, StateContainer {
                 middleware.respond(to: mutation, passedTo: container, forwardingTo: dispatch)
             }
 
-            middleware.prepare(for: container)
+            middleware.attach(to: container)
+
+            detach = {
+                middleware.detach(from: container)
+            }
         } else {
             self.dispatch = dispatch
         }
