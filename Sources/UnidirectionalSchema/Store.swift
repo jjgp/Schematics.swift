@@ -52,7 +52,7 @@ public final class Store<State>: Publisher, StateContainer {
         middleware: (any Middleware<Substate>)? = nil,
         state keyPath: WritableKeyPath<State, Substate>
     ) -> Store<Substate> {
-        let dispatch: Dispatch<Substate> = { [unowned self] mutation in
+        let dispatch: Dispatch<Substate> = { mutation in
             self.dispatch(Mutations.Scope(mutation: mutation, state: keyPath))
         }
 
@@ -62,6 +62,15 @@ public final class Store<State>: Publisher, StateContainer {
             middleware: middleware,
             subject: subject.scope(value: keyPath)
         )
+    }
+
+    ///
+    public func extend(middleware: any Middleware<State>) -> Store<State> {
+        let dispatch: Dispatch<State> = { mutation in
+            self.dispatch(mutation)
+        }
+
+        return .init(dispatch: dispatch, dispatcher: dispatcher, middleware: middleware, subject: subject)
     }
 }
 
