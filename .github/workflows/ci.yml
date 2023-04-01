@@ -16,7 +16,6 @@ on:
 
 jobs:
   test:
-    needs: [ ready ]
     runs-on: macos-12
     strategy:
       matrix:
