@@ -19,9 +19,9 @@ public final class AnyStateContainer<State>: StateContainer {
     private let dispatch: Dispatch<State>
 
     ///
-    public init(getState: @escaping () -> State, send: @escaping Dispatch<State>) {
+    public init(getState: @escaping () -> State, dispatch: @escaping Dispatch<State>) {
+        self.dispatch = dispatch
         self.getState = getState
-        dispatch = send
     }
 
     ///
