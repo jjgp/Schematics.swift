@@ -1,3 +1,5 @@
+include Examples/GitHub/GitHub.mk
+
 .PHONY: bootstrap
 bootstrap:
 	@$(MAKE) brew
@@ -31,7 +33,3 @@ test:
 	@for scheme in $(SCHEMES);  do \
 		xcodebuild test -workspace Schematics.xcworkspace -scheme $$scheme -destination platform="$(PLATFORM)"; \
 	done
-
-.PHONY: tuist_generate
-tuist_generate:
-	@tuist generate --no-open --path Examples/GitHub

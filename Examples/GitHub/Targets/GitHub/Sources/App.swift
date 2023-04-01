@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct GitHubApp: App {
+struct App: SwiftUI.App {
     var body: some Scene {
         WindowGroup {
             Text("Hello, World!")
