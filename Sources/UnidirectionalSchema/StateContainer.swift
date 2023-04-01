@@ -19,14 +19,14 @@ public final class AnyStateContainer<State>: StateContainer {
     private let dispatch: Dispatch<State>
 
     ///
-    public init(getState: @escaping () -> State, send: @escaping Dispatch<State>) {
+    public init(getState: @escaping () -> State, dispatch: @escaping Dispatch<State>) {
+        self.dispatch = dispatch
         self.getState = getState
-        dispatch = send
     }
 
     ///
     public convenience init<S: StateContainer>(_ container: S) where S.State == State {
-        self.init(getState: { container.state }, send: container.send(_:))
+        self.init(getState: { container.state }, dispatch: container.send(_:))
     }
 }
 
@@ -58,7 +58,7 @@ public extension StateContainer {
             getState: { [unowned self] in
                 self.state
             },
-            send: { [unowned self] mutation in
+            dispatch: { [unowned self] mutation in
                 self.send(mutation)
             }
         )
