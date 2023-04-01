@@ -33,3 +33,6 @@ test:
 	@for scheme in $(SCHEMES);  do \
 		xcodebuild test -workspace Schematics.xcworkspace -scheme $$scheme -destination platform="$(PLATFORM)"; \
 	done
+
+.PHONY: tuist_generate
+tuist_generate: examples_github_xcodeproj
