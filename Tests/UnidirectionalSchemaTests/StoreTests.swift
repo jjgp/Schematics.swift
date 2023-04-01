@@ -70,12 +70,14 @@ final class StoreTests: XCTestCase {
 
     func testDeallocOfStoreDetachesFromMiddleware() {
         let middlewareSpy = MiddlewareSpy<Counts>()
-        middlewareSpy.onDetach = { container in
-            print(container)
+
+        var isDetached = false
+        middlewareSpy.onDetach = { _ in
+            isDetached.toggle()
         }
 
-        _ = {
-            _ = Store(middleware: middlewareSpy, state: Counts())
-        }()
+        _ = Store(middleware: middlewareSpy, state: Counts())
+
+        XCTAssertTrue(isDetached)
     }
 }
