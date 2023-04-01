@@ -7,18 +7,14 @@ on:
   pull_request:
     branches:
       - '*'
-    types: [ labeled ]
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
   workflow_dispatch:
 
 jobs:
-  ready:
-    runs-on: ubuntu-latest
-    steps:
-      - name: check for ci label
-        if: ${{ github.event.label.name != 'ci' }}
-        run: |
-          echo "Add the PR label 'ci' to proceed"
-          exit 1
   test:
     needs: [ ready ]
     runs-on: macos-12
