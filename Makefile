@@ -24,7 +24,7 @@ open:
 .PHONY: pre-commit-install
 pre-commit-install:
 	@pre-commit install
-	@pre-commit install -t post-checkout
+	@pre-commit install -t post-checkout -t post-merge
 
 .PHONY: test
 test: PLATFORM ?= iOS Simulator,OS=16.2,name=iPhone 14

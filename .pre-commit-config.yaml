@@ -23,4 +23,6 @@ repos:
         language: system
         name: tuist-generate
         pass_filenames: false
-        stages: [post-checkout]
+        stages:
+          - post-checkout
+          - post-merge
