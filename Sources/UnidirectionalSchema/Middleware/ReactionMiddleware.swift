@@ -66,10 +66,15 @@ public class ReactionMiddleware<State>: Middleware {
     }
 
     ///
-    public func prepare(for container: any StateContainer<State>) {
+    public func attach(to container: any StateContainer<State>) {
         subscription = runPublisher.sink { mutation in
             container.send(mutation)
         }
+    }
+
+    ///
+    public func detach(from _: any StateContainer<State>) {
+        subscription = nil
     }
 
     ///

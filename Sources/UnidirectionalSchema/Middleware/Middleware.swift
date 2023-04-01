@@ -4,7 +4,10 @@ public protocol Middleware<State> {
     associatedtype State
 
     ///
-    func prepare(for container: any StateContainer<State>)
+    func attach(to container: any StateContainer<State>)
+
+    ///
+    func detach(from container: any StateContainer<State>)
 
     ///
     func respond(
@@ -16,5 +19,8 @@ public protocol Middleware<State> {
 
 public extension Middleware {
     ///
-    func prepare(for _: any StateContainer<State>) {}
+    func attach(to _: any StateContainer<State>) {}
+
+    ///
+    func detach(from _: any StateContainer<State>) {}
 }

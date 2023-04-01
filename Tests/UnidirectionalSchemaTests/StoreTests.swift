@@ -67,4 +67,17 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(firstCountOutputs, [0, 10, -10])
         XCTAssertEqual(secondCountOutputs, [0, -20, 20])
     }
+
+    func testDeallocOfStoreDetachesFromMiddleware() {
+        let middlewareSpy = MiddlewareSpy<Counts>()
+
+        var isDetached = false
+        middlewareSpy.onDetach = { _ in
+            isDetached.toggle()
+        }
+
+        _ = Store(middleware: middlewareSpy, state: Counts())
+
+        XCTAssertTrue(isDetached)
+    }
 }

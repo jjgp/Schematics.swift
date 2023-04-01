@@ -2,6 +2,7 @@ import ReactiveSchema
 
 ///
 public final class Store<State>: Publisher, StateContainer {
+    private var detach: Cancellable?
     private var dispatch: Dispatch<State>!
     private let dispatcher: Dispatcher
     private var subject: BindingValueSubject<State>
@@ -22,7 +23,11 @@ public final class Store<State>: Publisher, StateContainer {
                 middleware.respond(to: mutation, passedTo: container, forwardingTo: dispatch)
             }
 
-            middleware.prepare(for: container)
+            middleware.attach(to: container)
+
+            detach = Cancellable {
+                middleware.detach(from: container)
+            }
         } else {
             self.dispatch = dispatch
         }
@@ -52,7 +57,7 @@ public final class Store<State>: Publisher, StateContainer {
         middleware: (any Middleware<Substate>)? = nil,
         state keyPath: WritableKeyPath<State, Substate>
     ) -> Store<Substate> {
-        let dispatch: Dispatch<Substate> = { [unowned self] mutation in
+        let dispatch: Dispatch<Substate> = { mutation in
             self.dispatch(Mutations.Scope(mutation: mutation, state: keyPath))
         }
 
@@ -62,6 +67,15 @@ public final class Store<State>: Publisher, StateContainer {
             middleware: middleware,
             subject: subject.scope(value: keyPath)
         )
+    }
+
+    ///
+    public func extend(middleware: any Middleware<State>) -> Store<State> {
+        let dispatch: Dispatch<State> = { mutation in
+            self.dispatch(mutation)
+        }
+
+        return .init(dispatch: dispatch, dispatcher: dispatcher, middleware: middleware, subject: subject)
     }
 }
 
