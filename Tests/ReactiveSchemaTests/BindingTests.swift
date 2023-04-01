@@ -3,6 +3,7 @@ import XCTest
 
 class BindingTests: XCTestCase {
     func testBindingAfterScope() {
+        // Given
         var value = State()
         let binding = Binding {
             value
@@ -11,8 +12,10 @@ class BindingTests: XCTestCase {
         }
         let scoped = binding.scope(value: \.nestedState)
 
+        // When
         scoped.wrappedValue.count += 1
 
+        // Then
         let expectedValue = State(nestedState: .init(count: 1))
         XCTAssertEqual(value, expectedValue)
         XCTAssertEqual(binding.wrappedValue, expectedValue)
