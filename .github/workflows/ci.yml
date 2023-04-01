@@ -10,8 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  ready:
     if: ${{ github.event.label.name == 'ci' }}
+  test:
+    needs: [ ready ]
     runs-on: macos-12
     strategy:
       matrix:
