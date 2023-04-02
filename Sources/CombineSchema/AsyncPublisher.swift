@@ -5,9 +5,10 @@ import FoundationSchema
 ///
 public final class AsyncPublisher<Output>: Publisher {
 //    private var conduits = Set<any Conduit<Output>>()
-    private let lock: UnfairLock = .init()
+    private let conduitLock: UnfairLock = .init()
     private let operation: @Sendable () async -> Output
     private let priority: TaskPriority?
+    private let produceLock: UnfairLock = .init()
     private var output: Output?
     private var task: Task<Void, Failure>?
 
@@ -21,9 +22,9 @@ public final class AsyncPublisher<Output>: Publisher {
     }
 
     private func produce() -> Output? {
-        lock.lock()
+        produceLock.lock()
         guard output == nil else {
-            lock.unlock()
+            produceLock.unlock()
             return output
         }
 
@@ -34,11 +35,14 @@ public final class AsyncPublisher<Output>: Publisher {
                 }
 
                 let output = await operation()
-                self?.output = output
+                self?.produceLock {
+                    self?.output = output
+                }
+
                 self?.forward(input: output)
             }
         }
-        lock.unlock()
+        produceLock.unlock()
 
         return nil
     }
@@ -48,7 +52,7 @@ public final class AsyncPublisher<Output>: Publisher {
             // TODO: dissassociate
         }
 
-//        conduits.append(subscription)
+//        conduits.append()
         subscriber.receive(subscription: subscription)
     }
 
