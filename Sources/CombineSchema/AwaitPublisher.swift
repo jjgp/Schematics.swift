@@ -45,9 +45,7 @@ private extension AwaitPublisher {
         }
 
         func request(_ demand: Subscribers.Demand) {
-            guard demand > 0 else {
-                fatalError("Demand must be greater than none")
-            }
+            demand.guardDemandIsNatural()
 
             lock.lock()
             guard active, let subscriber else {
