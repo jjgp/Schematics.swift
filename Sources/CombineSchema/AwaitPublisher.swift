@@ -17,6 +17,7 @@ public struct AwaitPublisher<Output, Failure: Error>: Combine.Publisher {
 
     public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
         let subscription = lock {
+            // TODO: if completed use
             AsyncSubscription(publisher: self, subscriber: subscriber)
         }
         subscriber.receive(subscription: subscription)
@@ -26,6 +27,7 @@ public struct AwaitPublisher<Output, Failure: Error>: Combine.Publisher {
 }
 
 private extension AwaitPublisher {
+    // TODO: there still may be a case where the AsyncSubscription is not requested until after the task completes with result
     class CompletedSubscription<S: Subscriber>: Combine.Subscription where S.Input == Output, S.Failure == Failure {
         private var active = true
         private let lock: UnfairLock = .init()
@@ -105,9 +107,7 @@ private extension AwaitPublisher {
         }
 
         func request(_ demand: Subscribers.Demand) {
-            guard demand > 0 else {
-                fatalError("Demand must be greater than none")
-            }
+            demand.guardDemandIsNatural()
 
             lock.lock()
             guard subscriber != nil else {
