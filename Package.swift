@@ -20,7 +20,7 @@ let package = Package(
         .testTarget(name: "CombineSchemaTests", dependencies: ["CombineSchema"]),
         .target(name: "FoundationSchema", dependencies: []),
         .testTarget(name: "FoundationSchemaTests", dependencies: ["FoundationSchema"]),
-        .target(name: "ReactiveSchema", dependencies: ["FoundationSchema"]),
+        .target(name: "ReactiveSchema", dependencies: ["CombineSchema", "FoundationSchema"]),
         .testTarget(name: "ReactiveSchemaTests", dependencies: ["ReactiveSchema"]),
         .target(name: "UnidirectionalSchema", dependencies: ["ReactiveSchema"]),
         .testTarget(name: "UnidirectionalSchemaTests", dependencies: ["UnidirectionalSchema"])

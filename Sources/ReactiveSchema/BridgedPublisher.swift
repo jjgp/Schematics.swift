@@ -1,4 +1,5 @@
 import Combine
+import CombineSchema
 import Foundation
 import FoundationSchema
 
@@ -71,9 +72,7 @@ private extension BridgedPublisher {
         }
 
         func request(_ demand: Subscribers.Demand) {
-            guard demand > 0 else {
-                fatalError("Demand must be greater than none")
-            }
+            demand.guardDemandIsNatural()
 
             lock {
                 guard subscriber != nil else {
