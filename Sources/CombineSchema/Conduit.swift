@@ -44,7 +44,4 @@ public final class AnyConduit<Output, Failure: Error>: Conduit, Hashable {
     public func receive(_ input: Output) {
         receiveInput(input)
     }
-
-    public typealias Output = Output
-    public typealias Failure = Failure
 }
