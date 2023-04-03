@@ -4,11 +4,11 @@ import FoundationSchema
 
 ///
 public final class AsyncPublisher<Output>: Publisher {
-//    private var conduits = Set<any Conduit<Output>>()
-    private let conduitLock: UnfairLock = .init()
+    private var conduits = Set<AnyConduit<Output, Failure>>()
+    private let conduitsLock: UnfairLock = .init()
     private let operation: @Sendable () async -> Output
     private let priority: TaskPriority?
-    private let produceLock: UnfairLock = .init()
+    private let outputLock: UnfairLock = .init()
     private var output: Output?
     private var task: Task<Void, Failure>?
 
@@ -22,9 +22,9 @@ public final class AsyncPublisher<Output>: Publisher {
     }
 
     private func produce() -> Output? {
-        produceLock.lock()
+        outputLock.lock()
         guard output == nil else {
-            produceLock.unlock()
+            outputLock.unlock()
             return output
         }
 
@@ -35,24 +35,32 @@ public final class AsyncPublisher<Output>: Publisher {
                 }
 
                 let output = await operation()
-                self?.produceLock {
+                self?.outputLock {
                     self?.output = output
                 }
 
                 self?.forward(input: output)
             }
         }
-        produceLock.unlock()
+        outputLock.unlock()
 
         return nil
     }
 
     public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
-        let subscription = Subscription(subscriber: subscriber, produce: produce) { _ in
-            // TODO: dissassociate
-        }
+        let subscription = Subscription(subscriber: subscriber, produce: produce)
 
-//        conduits.append()
+//        let conduit = outputLock.lock {
+//            if output == nil {
+//                let conduit = AnyConduit(subscription)
+//                return conduit
+//            }
+//
+//            return
+//        }
+
+        // TODO: if result do not append
+        // TODO: conduits.append()
         subscriber.receive(subscription: subscription)
     }
 
@@ -61,20 +69,15 @@ public final class AsyncPublisher<Output>: Publisher {
 }
 
 private extension AsyncPublisher {
-    class Subscription<S: Subscriber>: Combine.Subscription where S.Input == Output, S.Failure == Failure {
+    class Subscription<S: Subscriber>: Conduit, Combine.Subscription where S.Input == Output, S.Failure == Failure {
         private var active = true
         private let produce: () -> Output?
         private let lock: UnfairLock = .init()
-        // TODO: may need to pass the on cancel separately
-        private let onCancel: (Subscription) -> Void
+        private var onCancel: (() -> Void)?
         private var subscriber: S?
 
-        init(subscriber: S,
-             produce: @escaping () -> Output?,
-             onCancel: @escaping (Subscription) -> Void)
-        {
+        init(subscriber: S, produce: @escaping () -> Output?) {
             self.produce = produce
-            self.onCancel = onCancel
             self.subscriber = subscriber
         }
 
@@ -84,7 +87,13 @@ private extension AsyncPublisher {
                 subscriber = nil
             }
 
-            onCancel(self)
+            onCancel?()
+        }
+
+        public func receive(completion: Subscribers.Completion<Failure>) {
+            lock {
+                subscriber?.receive(completion: completion)
+            }
         }
 
         func receive(_ input: Output) {
