@@ -8,24 +8,32 @@ public final class AsyncPublisher<Output>: Publisher {
     private let conduitsLock: UnfairLock = .init()
     private let operation: @Sendable () async -> Output
     private let priority: TaskPriority?
-    private let outputLock: UnfairLock = .init()
-    private var output: Output?
+    private var result: Result<Output, Failure>?
+    private let resultLock: UnfairLock = .init()
     private var task: Task<Void, Failure>?
+
+    // TODO: remove conduit list and issue task to subscription instead.
 
     public init(priority: TaskPriority? = nil, operation: @escaping @Sendable () async -> Output) {
         self.operation = operation
         self.priority = priority
     }
 
-    private func forward(input _: Output) {
-        // TODO: forward input to conduits
+    private func forward(input: Output) {
+        conduitsLock.lock()
+        let conduits = conduits
+        conduitsLock.unlock()
+
+        for conduit in conduits {
+            conduit.receive(input)
+        }
     }
 
-    private func produce() -> Output? {
-        outputLock.lock()
-        guard output == nil else {
-            outputLock.unlock()
-            return output
+    private func produce() -> Result<Output, Failure>? {
+        resultLock.lock()
+        guard result == nil else {
+            resultLock.unlock()
+            return result
         }
 
         if task == nil {
@@ -35,20 +43,23 @@ public final class AsyncPublisher<Output>: Publisher {
                 }
 
                 let output = await operation()
-                self?.outputLock {
-                    self?.output = output
+                self?.resultLock {
+                    self?.result = .success(output)
                 }
 
                 self?.forward(input: output)
             }
         }
-        outputLock.unlock()
+        resultLock.unlock()
 
         return nil
     }
 
     public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
         let subscription = Subscription(subscriber: subscriber, produce: produce)
+
+        // TODO: what to do if subscribes when task completes or is cancelled? The current result/conduit pattern doesn't
+        // capture this dynamic?
 
 //        let conduit = outputLock.lock {
 //            if output == nil {
@@ -64,19 +75,18 @@ public final class AsyncPublisher<Output>: Publisher {
         subscriber.receive(subscription: subscription)
     }
 
-    // TODO: method to forward result and method to dissasciate
     public typealias Failure = Never
 }
 
 private extension AsyncPublisher {
     class Subscription<S: Subscriber>: Conduit, Combine.Subscription where S.Input == Output, S.Failure == Failure {
         private var active = true
-        private let produce: () -> Output?
+        private let produce: () -> Result<Output, Failure>?
         private let lock: UnfairLock = .init()
         private var onCancel: (() -> Void)?
         private var subscriber: S?
 
-        init(subscriber: S, produce: @escaping () -> Output?) {
+        init(subscriber: S, produce: @escaping () -> Result<Output, Failure>?) {
             self.produce = produce
             self.subscriber = subscriber
         }
@@ -84,16 +94,24 @@ private extension AsyncPublisher {
         func cancel() {
             lock {
                 active = false
+                onCancel?()
+                onCancel = nil
                 subscriber = nil
             }
-
-            onCancel?()
         }
 
-        public func receive(completion: Subscribers.Completion<Failure>) {
-            lock {
-                subscriber?.receive(completion: completion)
+        func receive(completion: Subscribers.Completion<Failure>) {
+            lock.lock()
+            guard active, let subscriber else {
+                lock.unlock()
+                return
             }
+
+            active = false
+            self.subscriber = nil
+            lock.unlock()
+
+            subscriber.receive(completion: completion)
         }
 
         func receive(_ input: Output) {
@@ -115,21 +133,17 @@ private extension AsyncPublisher {
             demand.guardDemandIsNatural()
 
             lock.lock()
-            guard active, let subscriber else {
+            guard active else {
                 lock.unlock()
                 return
             }
-
-            active = false
-            self.subscriber = nil
             lock.unlock()
 
-            guard let output = produce() else {
+            guard case let .success(output) = produce() else {
                 return
             }
 
-            _ = subscriber.receive(output)
-            subscriber.receive(completion: .finished)
+            receive(output)
         }
     }
 }

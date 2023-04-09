@@ -37,11 +37,11 @@ public final class AnyConduit<Output, Failure: Error>: Conduit, Hashable {
         hasher.combine(ObjectIdentifier(self))
     }
 
-    public func receive(completion: Subscribers.Completion<Failure>) {
-        receiveCompletion(completion)
-    }
-
     public func receive(_ input: Output) {
         receiveInput(input)
+    }
+
+    public func receive(completion: Subscribers.Completion<Failure>) {
+        receiveCompletion(completion)
     }
 }
