@@ -12,14 +12,24 @@ public extension Publisher {
     }
 
     func mapAsync<T>(priority: TaskPriority? = nil,
-                     operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Error> {
-        mapError {
-            $0 as Error // TODO: not sure about this
-        }
-        .map { output in
+                     operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Failure> {
+        map { output in
             AsyncThrowingPublisher(priority: priority, operation: {
                 try await operation(output)
             })
+        }
+        .switchToLatest()
+    }
+
+    func mapAsync<T>(priority: TaskPriority? = nil,
+                     operation: @escaping @Sendable (Output) async throws -> T,
+                     mapError: @escaping (any Error) -> Failure) -> some Publisher<T, Failure> {
+        map { output in
+            AsyncThrowingPublisher(priority: priority,
+                                   operation: {
+                                       try await operation(output)
+                                   },
+                                   mapError: mapError)
         }
         .switchToLatest()
     }
@@ -34,16 +44,13 @@ public extension Publisher {
         }
     }
 
-    func flatMapAsync<T>(maxPublishers: Subscribers.Demand = .unlimited,
-                         priority: TaskPriority? = nil,
-                         operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Error> {
-        mapError {
-            $0 as Error // TODO: not sure about this
-        }
-        .flatMap(maxPublishers: maxPublishers) { output in
-            AsyncThrowingPublisher(priority: priority, operation: {
-                try await operation(output)
-            })
-        }
-    }
+//    func flatMapAsync<T>(maxPublishers: Subscribers.Demand = .unlimited,
+//                         priority: TaskPriority? = nil,
+//                         operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Failure> {
+//        flatMap(maxPublishers: maxPublishers) { output in
+//            AsyncThrowingPublisher(priority: priority, operation: {
+//                try await operation(output)
+//            })
+//        }
+//    }
 }

@@ -1,13 +1,18 @@
 import Combine
-import Foundation
 import FoundationSchema
 
 ///
-public final class AsyncThrowingPublisher<Output>: Publisher {
+public final class AsyncThrowingPublisher<Output, Failure: Error>: Publisher {
+    private let mapError: (any Error) -> Failure
     private let operation: @Sendable () async throws -> Output
     private let priority: TaskPriority?
 
-    public init(priority: TaskPriority? = nil, operation: @escaping @Sendable () async throws -> Output) {
+    public init(priority: TaskPriority? = nil,
+                operation: @escaping @Sendable () async throws -> Output,
+                mapError: @escaping (any Error) -> Failure = { error in
+                    fatalError("Encountered unexpected error: \(error)")
+                }) {
+        self.mapError = mapError
         self.operation = operation
         self.priority = priority
     }
@@ -16,8 +21,6 @@ public final class AsyncThrowingPublisher<Output>: Publisher {
         let subscription = Subscription(parent: self, subscriber: subscriber)
         subscriber.receive(subscription: subscription)
     }
-
-    public typealias Failure = Error
 }
 
 private extension AsyncThrowingPublisher {
@@ -80,14 +83,16 @@ private extension AsyncThrowingPublisher {
 
             if task == nil {
                 task = Task(priority: parent.priority) { [weak parent, weak self] in
-                    guard let operation = parent?.operation else {
+                    guard let mapError = parent?.mapError, let operation = parent?.operation else {
                         return
                     }
 
                     do {
                         self?.receive(try await operation())
-                    } catch {
+                    } catch let error as Failure {
                         self?.receive(error: error)
+                    } catch {
+                        self?.receive(error: mapError(error))
                     }
                 }
             }
