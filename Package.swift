@@ -16,7 +16,7 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        .target(name: "CombineSchema", dependencies: []),
+        .target(name: "CombineSchema", dependencies: ["FoundationSchema"]),
         .testTarget(name: "CombineSchemaTests", dependencies: ["CombineSchema"]),
         .target(name: "FoundationSchema", dependencies: []),
         .testTarget(name: "FoundationSchemaTests", dependencies: ["FoundationSchema"]),
