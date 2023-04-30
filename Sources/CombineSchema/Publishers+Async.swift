@@ -4,9 +4,9 @@ public extension Publisher {
     func mapAsync<T>(priority: TaskPriority? = nil,
                      operation: @escaping @Sendable (Output) async -> T) -> some Publisher<T, Failure> {
         map { output in
-            AsyncPublisher(priority: priority, operation: {
+            AsyncPublisher(priority: priority) {
                 await operation(output)
-            })
+            }
         }
         .switchToLatest()
     }
@@ -14,9 +14,9 @@ public extension Publisher {
     func mapAsync<T>(priority: TaskPriority? = nil,
                      operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Failure> {
         map { output in
-            AsyncThrowingPublisher(priority: priority, operation: {
+            AsyncThrowingPublisher(priority: priority) {
                 try await operation(output)
-            })
+            }
         }
         .switchToLatest()
     }
@@ -38,19 +38,9 @@ public extension Publisher {
                          priority: TaskPriority? = nil,
                          operation: @escaping @Sendable (Output) async -> T) -> some Publisher<T, Failure> {
         flatMap(maxPublishers: maxPublishers) { output in
-            AsyncPublisher(priority: priority, operation: {
+            AsyncPublisher(priority: priority) {
                 await operation(output)
-            })
+            }
         }
     }
-
-//    func flatMapAsync<T>(maxPublishers: Subscribers.Demand = .unlimited,
-//                         priority: TaskPriority? = nil,
-//                         operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Failure> {
-//        flatMap(maxPublishers: maxPublishers) { output in
-//            AsyncThrowingPublisher(priority: priority, operation: {
-//                try await operation(output)
-//            })
-//        }
-//    }
 }
