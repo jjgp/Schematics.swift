@@ -11,8 +11,8 @@ public extension Publisher {
         .switchToLatest()
     }
 
-    func tryMapAsync<T>(priority: TaskPriority? = nil,
-                        operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Error> {
+    func mapAsync<T>(priority: TaskPriority? = nil,
+                     operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Error> {
         mapError {
             $0 as Error // TODO: not sure about this
         }
