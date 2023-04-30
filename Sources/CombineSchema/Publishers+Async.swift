@@ -1,8 +1,10 @@
 import Combine
 
 public extension Publisher {
-    func mapAsync<T>(priority: TaskPriority? = nil,
-                     operation: @escaping @Sendable (Output) async -> T) -> some Publisher<T, Failure> {
+    func mapAsync<T>(
+        priority: TaskPriority? = nil,
+        operation: @escaping @Sendable (Output) async -> T
+    ) -> Publishers.SwitchToLatest<AsyncPublisher<T>, Publishers.Map<Self, AsyncPublisher<T>>> {
         map { output in
             AsyncPublisher(priority: priority) {
                 await operation(output)
@@ -11,19 +13,11 @@ public extension Publisher {
         .switchToLatest()
     }
 
-    func mapAsync<T>(priority: TaskPriority? = nil,
-                     operation: @escaping @Sendable (Output) async throws -> T) -> some Publisher<T, Failure> {
-        map { output in
-            AsyncThrowingPublisher(priority: priority) {
-                try await operation(output)
-            }
-        }
-        .switchToLatest()
-    }
-
-    func mapAsync<T>(priority: TaskPriority? = nil,
-                     operation: @escaping @Sendable (Output) async throws -> T,
-                     mapError: @escaping (any Error) -> Failure) -> some Publisher<T, Failure> {
+    func mapAsync<T>(
+        priority: TaskPriority? = nil,
+        operation: @escaping @Sendable (Output) async throws -> T,
+        mapError: @escaping (any Error) -> Failure
+    ) -> Publishers.SwitchToLatest<AsyncThrowingPublisher<T, Failure>, Publishers.Map<Self, AsyncThrowingPublisher<T, Failure>>> {
         map { output in
             AsyncThrowingPublisher(priority: priority,
                                    operation: {
@@ -34,9 +28,11 @@ public extension Publisher {
         .switchToLatest()
     }
 
-    func flatMapAsync<T>(maxPublishers: Subscribers.Demand = .unlimited,
-                         priority: TaskPriority? = nil,
-                         operation: @escaping @Sendable (Output) async -> T) -> some Publisher<T, Failure> {
+    func flatMapAsync<T>(
+        maxPublishers: Subscribers.Demand = .unlimited,
+        priority: TaskPriority? = nil,
+        operation: @escaping @Sendable (Output) async -> T
+    ) -> Publishers.FlatMap<Publishers.SetFailureType<AsyncPublisher<T>, Failure>, Self> {
         flatMap(maxPublishers: maxPublishers) { output in
             AsyncPublisher(priority: priority) {
                 await operation(output)

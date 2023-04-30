@@ -9,9 +9,7 @@ public final class AsyncThrowingPublisher<Output, Failure: Error>: Publisher {
 
     public init(priority: TaskPriority? = nil,
                 operation: @escaping @Sendable () async throws -> Output,
-                mapError: @escaping (any Error) -> Failure = { error in
-                    fatalError("Encountered unexpected error: \(error)")
-                }) {
+                mapError: @escaping (any Error) -> Failure) {
         self.mapError = mapError
         self.operation = operation
         self.priority = priority
