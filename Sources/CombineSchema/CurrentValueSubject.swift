@@ -1,4 +1,5 @@
 import Combine
+import Foundation
 import FoundationSchema
 
 public final class CurrentValueSubject<Output, Failure: Error> {
@@ -7,7 +8,7 @@ public final class CurrentValueSubject<Output, Failure: Error> {
     }
 
     private var completion: Subscribers.Completion<Failure>?
-    private var conduits: Set<Conduit> = []
+    private var conduits: Set<Conduit<Output, Failure>> = []
     private var currentValue: Output
     private let lock: UnfairLock = .init()
     private var upstreamSubscribers = [Combine.Subscription]()
@@ -42,14 +43,23 @@ public final class CurrentValueSubject<Output, Failure: Error> {
             subscriber.receive(completion: completion)
         } else {
             let subscription = Subscription(parent: self, subscriber: subscriber)
-            let conduit = Conduit(subscription)
-            conduits.insert(conduit)
+            conduits.insert(subscription)
             lock.unlock()
             subscriber.receive(subscription: subscription)
         }
     }
 
-    func send(_ value: Output) {
+    private func remove(_ conduit: Conduit<Output, Failure>) {
+        lock.lock()
+        guard active else {
+            lock.unlock()
+            return
+        }
+        conduits.remove(conduit)
+        lock.unlock()
+    }
+
+    public func send(_ value: Output) {
         send { currentValue in
             currentValue = value
         }
@@ -96,35 +106,11 @@ public final class CurrentValueSubject<Output, Failure: Error> {
 }
 
 private extension CurrentValueSubject {
-    class Conduit: Hashable {
-        private let receiveCompletion: (Subscribers.Completion<Failure>) -> Void
-        private let receiveInput: (Output) -> Void
-
-        init<S: Subscriber>(_ subscription: Subscription<S>) {
-            receiveCompletion = subscription.receive(completion:)
-            receiveInput = subscription.receive(_:)
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(ObjectIdentifier(self))
-        }
-
-        func receive(_ input: Output) {
-            receiveInput(input)
-        }
-
-        func receive(completion: Subscribers.Completion<Failure>) {
-            receiveCompletion(completion)
-        }
-
-        static func == (lhs: Conduit, rhs: Conduit) -> Bool {
-            lhs === rhs
-        }
-    }
-
-    class Subscription<S: Subscriber>: Combine.Subscription where S.Input == Output, S.Failure == Failure {
-        private var parent: CurrentValueSubject?
+    class Subscription<S: Subscriber>: Conduit<Output, Failure>, Combine.Subscription where S.Input == Output, S.Failure == Failure {
+        private var demand: Subscribers.Demand = .none
         private let lock: UnfairLock = .init()
+        private var parent: CurrentValueSubject?
+        private let recursiveLock: NSRecursiveLock = .init()
         private var subscriber: S?
 
         init(parent: CurrentValueSubject, subscriber: S) {
@@ -132,11 +118,37 @@ private extension CurrentValueSubject {
             self.subscriber = subscriber
         }
 
-        func cancel() {}
+        func cancel() {
+            lock.lock()
+            guard let parent else {
+                lock.unlock()
+                return
+            }
+            self.parent = nil
+            subscriber = nil
+            lock.unlock()
 
-        func receive(_: Output) {}
+            parent.remove(self)
+        }
 
-        func receive(completion _: Subscribers.Completion<Failure>) {}
+        override func receive(_: Output) {}
+
+        override func receive(completion: Subscribers.Completion<Failure>) {
+            lock.lock()
+            guard let subscriber else {
+                lock.unlock()
+                return
+            }
+            let parent = parent
+            self.parent = nil
+            self.subscriber = nil
+            lock.unlock()
+
+            parent?.remove(self)
+            recursiveLock.lock()
+            subscriber.receive(completion: completion)
+            recursiveLock.unlock()
+        }
 
         func request(_: Subscribers.Demand) {}
     }
