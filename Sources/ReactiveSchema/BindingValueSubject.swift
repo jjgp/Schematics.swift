@@ -1,3 +1,5 @@
+import FoundationSchema
+
 ///
 public struct BindingValueSubject<Value>: Subject {
     private let binding: Binding<Value>

@@ -74,6 +74,7 @@ public class ReactionMiddleware<State>: Middleware {
 
     ///
     public func detach(from _: any StateContainer<State>) {
+        subscription?.cancel()
         subscription = nil
     }
 

@@ -1,9 +1,11 @@
 import Combine
+import CombineSchema
 import Foundation
 import FoundationSchema
 
 ///
 public struct BridgedPublisher<Output>: Combine.Publisher {
+    // TODO: may be able to use publisher directly
     private let subscribeReceiveValue: (@escaping (Output) -> Void) -> Cancellable
 
     init<P: Publisher>(_ publisher: P) where P.Output == Output {
@@ -51,7 +53,7 @@ private extension BridgedPublisher {
 
         func receive(_ input: Output) {
             lock.lock()
-            guard demand > 0, let subscriber = subscriber else {
+            guard demand > 0, let subscriber else {
                 lock.unlock()
                 return
             }
@@ -70,9 +72,7 @@ private extension BridgedPublisher {
         }
 
         func request(_ demand: Subscribers.Demand) {
-            guard demand > 0 else {
-                fatalError("Demand must be greater than none")
-            }
+            demand.guardDemandIsNatural()
 
             lock {
                 guard subscriber != nil else {
