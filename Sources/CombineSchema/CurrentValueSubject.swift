@@ -108,6 +108,7 @@ public final class CurrentValueSubject<Output, Failure: Error> {
 private extension CurrentValueSubject {
     class Subscription<S: Subscriber>: Conduit<Output, Failure>, Combine.Subscription where S.Input == Output, S.Failure == Failure {
         private var demand: Subscribers.Demand = .none
+        private var hasSubscriberReceivedValue = false
         private let lock: UnfairLock = .init()
         private var parent: CurrentValueSubject?
         private let recursiveLock: NSRecursiveLock = .init()
@@ -134,12 +135,12 @@ private extension CurrentValueSubject {
         override func receive(_ input: Output) {
             lock.lock()
             guard demand > 0, let subscriber else {
-//                deliveredCurrentValue = false
+                hasSubscriberReceivedValue = false
                 lock.unlock()
                 return
             }
             demand -= 1
-//            deliveredCurrentValue = true
+            hasSubscriberReceivedValue = true
             lock.unlock()
 
             recursiveLock.lock()
@@ -178,8 +179,26 @@ private extension CurrentValueSubject {
                 lock.unlock()
                 return
             }
+            self.demand += demand
 
-            print(subscriber)
+            guard !hasSubscriberReceivedValue, let value = parent?.value else {
+                lock.unlock()
+                return
+            }
+
+            hasSubscriberReceivedValue = true
+            self.demand -= 1
+            lock.unlock()
+
+            recursiveLock.lock()
+            let additionalDemand = subscriber.receive(value)
+            recursiveLock.unlock()
+
+            if additionalDemand > 0 {
+                lock {
+                    self.demand += additionalDemand
+                }
+            }
         }
     }
 }
