@@ -131,7 +131,27 @@ private extension CurrentValueSubject {
             parent.remove(self)
         }
 
-        override func receive(_: Output) {}
+        override func receive(_ input: Output) {
+            lock.lock()
+            guard demand > 0, let subscriber else {
+//                deliveredCurrentValue = false
+                lock.unlock()
+                return
+            }
+            demand -= 1
+//            deliveredCurrentValue = true
+            lock.unlock()
+
+            recursiveLock.lock()
+            let additionalDemand = subscriber.receive(input)
+            recursiveLock.unlock()
+
+            if additionalDemand > 0 {
+                lock {
+                    self.demand += additionalDemand
+                }
+            }
+        }
 
         override func receive(completion: Subscribers.Completion<Failure>) {
             lock.lock()
@@ -150,6 +170,16 @@ private extension CurrentValueSubject {
             recursiveLock.unlock()
         }
 
-        func request(_: Subscribers.Demand) {}
+        func request(_ demand: Subscribers.Demand) {
+            demand.guardDemandIsNatural()
+
+            lock.lock()
+            guard let subscriber else {
+                lock.unlock()
+                return
+            }
+
+            print(subscriber)
+        }
     }
 }
